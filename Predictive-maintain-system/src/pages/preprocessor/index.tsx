@@ -454,7 +454,7 @@ const Dashboard: React.FC = () => {
   return (
     <>
       <Box sx={{ p: 4 }}>
-        <Typography variant="h4" sx={{ mb: 4 }}>
+        <Typography className="text-center" variant="h4" sx={{ mb: 4 }}>
           Real-Time Sensor Dashboard
         </Typography>
         <Grid container spacing={4}>
@@ -473,7 +473,7 @@ const Dashboard: React.FC = () => {
           </Grid>
 
           {/* Sensor Status Cards */}
-          <Grid item xs={12} container spacing={2}>
+          {/* <Grid item xs={12} container spacing={2}>
             {graphData.length > 0 &&
               Object.keys(rawData).filter((key) => key.endsWith("_null_flag")).map((flagKey, index) => {
                 const sensorName = flagKey.replace("_null_flag", "").replace("_", " ").toUpperCase();
@@ -501,26 +501,12 @@ const Dashboard: React.FC = () => {
                   </Grid>
                 );
               })}
-          </Grid>
+          </Grid> */}
         </Grid>
       </Box>
-      <Chart1 />
-      <Chart2 />
-
-      <div className="p-6 bg-gray-100 min-h-screen">
-        <h1 className="text-3xl font-bold text-gray-700 mb-4 text-center">Sensor Statistics</h1>
-        <StatisticalGrid sensorStats={[
-          { ...processedData?.statistics?.vibration_1, sensorName: "Vibration_1" },
-          { ...processedData?.statistics?.vibration_2, sensorName: "Vibration_2" },
-          { ...processedData?.statistics?.vibration_3, sensorName: "Vibration_3" },
-          { ...processedData?.statistics?.temperature, sensorName: "Temperature" },
-          { ...processedData?.statistics?.rpm, sensorName: "RPM" }
-        ]} />
-      </div>
 
 
-
-      <div className="p-6 bg-gray-100 min-h-screen">
+      <div className="p-6 bg-gray-100 "> {/*min-h-screen*/}
         <h1 className="text-2xl font-bold text-gray-800 mb-4 text-center">Real-Time Sensor Statuses</h1>
 
         {/* Overall Health Status */}
@@ -581,6 +567,21 @@ const Dashboard: React.FC = () => {
             </>
           )}
         </div>
+      </div>
+
+
+      <Chart1 />
+      <Chart2 />
+
+      <div className="p-6 bg-gray-100 min-h-screen">
+        <h1 className="text-3xl font-bold text-gray-700 mb-4 text-center">Sensor Statistics</h1>
+        <StatisticalGrid sensorStats={[
+          { ...processedData?.statistics?.vibration_1, sensorName: "Vibration_1" },
+          { ...processedData?.statistics?.vibration_2, sensorName: "Vibration_2" },
+          { ...processedData?.statistics?.vibration_3, sensorName: "Vibration_3" },
+          { ...processedData?.statistics?.temperature, sensorName: "Temperature" },
+          { ...processedData?.statistics?.rpm, sensorName: "RPM" }
+        ]} />
       </div>
     </>
   );

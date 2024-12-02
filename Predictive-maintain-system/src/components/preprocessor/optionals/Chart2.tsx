@@ -46,10 +46,10 @@ const Dashboard: React.FC = () => {
 
   return (
     <div className="p-8">
-      <h1 className="text-2xl font-bold mb-4">Live Sensor Dashboard</h1>
+      <h1 className="text-2xl font-bold mb-4 text-center">Live Sensor Dashboard</h1>
 
       {/* Anomaly Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+      {/* <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
         <AnomalyCard
           title="Vibration Sensor"
           status={rawData?.overall_health_status || "Unknown"}
@@ -68,11 +68,11 @@ const Dashboard: React.FC = () => {
           anomaly={rawData?.rpm_anomaly_flag || "Unknown"}
           isNull={rawData?.rpm_1_null_flag}
         />
-      </div>
+      </div> */}
 
       {/* Filter Controls */}
       <FilterControls
-        sensors={["vibration_1", "vibration_2", "temperature"]}
+        sensors={["vibration_1", "vibration_2", "vibration_3", "temperature", "rpm"]}
         onToggle={handleToggleSensor}
       />
 
