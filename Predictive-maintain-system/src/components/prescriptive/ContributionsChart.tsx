@@ -17,6 +17,7 @@ interface ContributionsChartProps {
 const ContributionsChart: FC<ContributionsChartProps> = ({ contributions }) => {
   // Aggregate the contributions into a format suitable for a pie chart
   const aggregatedData = Object.keys(contributions)
+    // .filter((feature) => feature !== "Failure_Type") // Exclude "Failure_Type" if it exists
     .map((feature) => ({
       label: feature,
       value: contributions[feature].reduce((sum, value) => sum + value, 0), // Sum all values for the feature
@@ -37,11 +38,11 @@ const ContributionsChart: FC<ContributionsChartProps> = ({ contributions }) => {
       {
         data: aggregatedData.map((entry) => entry.value),
         backgroundColor: [
-          "rgba(255, 99, 132, 0.5)",
-          "rgba(54, 162, 235, 0.5)",
-          "rgba(255, 206, 86, 0.5)",
-          "rgba(75, 192, 192, 0.5)",
-          "rgba(153, 102, 255, 0.5)",
+          "rgba(255, 99, 132, 0.6)",
+          "rgba(54, 162, 235, 0.6)",
+          "rgba(255, 206, 86, 0.6)",
+          "rgba(75, 192, 192, 0.6)",
+          "rgba(153, 102, 255, 0.6)",
         ],
         borderColor: [
           "rgba(255, 99, 132, 1)",
@@ -59,16 +60,29 @@ const ContributionsChart: FC<ContributionsChartProps> = ({ contributions }) => {
     responsive: true,
     plugins: {
       legend: {
-        position: "right" as const,
+        position: "top" as const,
       },
       title: {
         display: true,
-        text: "Feature Contributions",
+        text: "Contributions Pie Chart",
+      },
+      tooltip: {
+        callbacks: {
+          label: function (context: any) {
+            const value = context.raw; // The raw value of the dataset
+            const percentage = ((value / total) * 100).toFixed(2); // Calculate percentage
+            return `${context.label}: ${value} (${percentage}%)`; // Show value and percentage
+          },
+        },
       },
     },
   };
 
-  return <Pie data={data} options={options} />;
+  return (
+    <div className="w-[500px] h-[500px] file justify-center mb-5 mt-5">
+      <Pie className="w-[500px] h-[500px]" data={data} options={options} />
+    </div>
+  );
 };
 
 export default ContributionsChart;
