@@ -11,7 +11,6 @@ import {
 import { MatrixController, MatrixElement } from "chartjs-chart-matrix";
 import { Chart } from "react-chartjs-2";
 import { fetchCorrelationMatrix } from "@/services/api";
-import PairwiseLineCharts from "@/components/prescriptive/PairwiseLineCharts";
 
 ChartJS.register(
   CategoryScale,
@@ -48,103 +47,94 @@ const CorrelationHeatmap = () => {
   labels.forEach((row, rowIndex) => {
     labels.forEach((col, colIndex) => {
       dataMatrix.push({
-        x: colIndex,
-        y: rowIndex,
+        x: colIndex, // Column index
+        y: rowIndex, // Row index
         value: correlationMatrix[row][col],
       });
     });
   });
 
-  const options = {
-    responsive: true,
-    plugins: {
-      legend: {
-        display: false,
-      },
-      tooltip: {
-        callbacks: {
-          title() {
-            return "";
-          },
-          label(context: any) {
-            const v = context.dataset.data[context.dataIndex];
-            return [
-              `${labels[v.x]} vs ${labels[v.y]}:`,
-              `Correlation: ${v.value.toFixed(2)}`,
-            ];
-          },
-        },
-      },
-    },
-    scales: {
-      x: {
-        type: "category",
-        labels: labels,
-        ticks: {
-          display: true,
-        },
-        grid: {
-          display: false,
-        },
-      },
-      y: {
-        type: "category",
-        labels: labels,
-        offset: true,
-        ticks: {
-          display: true,
-        },
-        grid: {
-          display: false,
-        },
-      },
-    },
-  };
-
+  // Prepare Chart.js data object
   const data = {
     datasets: [
       {
-        label: "Correlation Matrix",
+        label: "Correlation Heatmap",
         data: dataMatrix,
-        backgroundColor(context: ScriptableContext<"matrix">) {
-          const value = context.dataset.data[context.dataIndex].value;
-          const alpha = Math.abs(value);
-          return value > 0
-            ? `rgba(0, 0, 255, ${alpha})`
-            : `rgba(255, 0, 0, ${alpha})`;
-        },
-        borderColor(context: ScriptableContext<"matrix">) {
-          const value = context.dataset.data[context.dataIndex].value;
-          const alpha = Math.abs(value);
-          return value > 0
-            ? `rgba(0, 0, 255, ${alpha})`
-            : `rgba(255, 0, 0, ${alpha})`;
+        backgroundColor: (context: ScriptableContext<"matrix">) => {
+          const value = (context.raw as { value: number }).value;
+          // Gradient: Blue (-1), White (0), Red (+1)
+          const color =
+            value < 0
+              ? `rgba(0, 0, 255, ${Math.abs(value)})`
+              : `rgba(255, 0, 0, ${Math.abs(value)})`;
+          return color;
         },
         borderWidth: 1,
-        width: ({ chart }: any) => {
-          return (chart.chartArea || {}).width / labels.length - 1;
+        width: ({ chart }: { chart: ChartJS }) => {
+          const chartArea = chart.chartArea || { width: 500 }; // Fallback
+          return chartArea.width / 10; // Example: Adjust based on number of cells
         },
-        height: ({ chart }: any) => {
-          return (chart.chartArea || {}).height / labels.length - 1;
+        height: ({ chart }: { chart: ChartJS }) => {
+          const chartArea = chart.chartArea || { height: 500 }; // Fallback
+          return chartArea.height / 10;
         },
       },
     ],
   };
 
+  const options = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      tooltip: {
+        callbacks: {
+          label: (tooltipItem: any) =>
+            `Correlation: ${(
+              tooltipItem.raw as { value: number }
+            ).value.toFixed(2)}`,
+        },
+      },
+      title: {
+        display: true,
+        text: "Correlation Heatmap",
+      },
+    },
+    scales: {
+      x: {
+        type: "category" as const,
+        labels: labels,
+        title: {
+          display: true,
+          text: "Variables",
+        },
+      },
+      y: {
+        type: "category" as const,
+        labels: labels,
+        title: {
+          display: true,
+          text: "Variables",
+        },
+      },
+    },
+  };
+
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-6">Correlation Analysis</h1>
-      <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
-        <h2 className="text-xl font-semibold mb-4">Correlation Heatmap</h2>
-        <div style={{ height: "600px" }}>
-          <Chart type="matrix" options={options} data={data} />
-        </div>
+    <>
+      <div style={{ width: "700px", height: "500px", margin: "0 auto" }}>
+        <h1 className="text-3xl font-bold mb-4">Correlation Analysis</h1>
+        <Chart type="matrix" data={data} options={options} />
       </div>
-      <div className="bg-white rounded-lg shadow-lg p-6">
-        <h2 className="text-xl font-semibold mb-4">Pairwise Comparisons</h2>
-        <PairwiseLineCharts dataset={{}} />
-      </div>
-    </div>
+
+      {/* <PairwiseLineCharts
+        dataset={{
+          Variable1: [12, 15, 20, 25, 18, 17, 30, 35, 40, 45],
+          Variable2: [8, 10, 12, 15, 13, 14, 20, 22, 25, 28],
+          Variable3: [50, 45, 40, 35, 30, 25, 20, 15, 10, 5],
+          Variable4: [5, 10, 15, 20, 25, 30, 35, 40, 45, 50],
+        }}
+      /> */}
+    </>
   );
 };
 

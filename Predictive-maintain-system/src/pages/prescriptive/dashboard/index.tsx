@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Bar } from "react-chartjs-2";
 import {
   Chart as ChartJS,
@@ -20,10 +20,10 @@ import {
   Container,
   Card,
   CardContent,
-  Divider,
 } from "@mui/material";
+
+import React from "react";
 import FailureList from "@/components/prescriptive/FailureList";
-import NAVBAR from "@/components/navBar";
 
 // Register the components
 ChartJS.register(
@@ -154,7 +154,6 @@ const TechnicalDashboard = ({
   );
 };
 
-// Non-Technical Dashboard Component
 interface NonTechnicalDashboardProps {
   data: DataRow[];
   performance: PerformanceMetrics;
@@ -202,7 +201,6 @@ const result = {
       Failure_Flag: 1,
       Failure_Type_Name: "Trimmer Bearing Fault",
     },
-    // Add the rest of your data here...
   ],
   performance: {
     accuracy: 0.95,
@@ -361,7 +359,6 @@ export default function Dashboard() {
       setData(result.data);
       setPerformance(result.performance);
 
-      // Calculate risk level based on Failure Flags
       const failureCounts: Record<number, number> = result.data.reduce(
         (acc: Record<number, number>, row) => {
           acc[row.Failure_Flag] = (acc[row.Failure_Flag] || 0) + 1;
@@ -382,7 +379,6 @@ export default function Dashboard() {
 
   return (
     <Box sx={{ bgcolor: "#f5f5f5", minHeight: "100vh" }}>
-      <NAVBAR />
       <Container maxWidth="xl" sx={{ pt: 3, pb: 6 }}>
         <Card sx={{ mb: 3 }}>
           <CardContent>
@@ -404,70 +400,7 @@ export default function Dashboard() {
             riskLevel={riskLevel}
           />
         ) : (
-          <>
-            <TechnicalDashboard data={data} performance={performance} />
-            <Card sx={{ mt: 4 }}>
-              <CardContent>
-                <Typography variant="h6" sx={{ mb: 3 }}>
-                  Performance Metrics Explanation
-                </Typography>
-                <Grid container spacing={3}>
-                  <Grid item xs={12} sm={6} lg={3}>
-                    <Card variant="outlined">
-                      <CardContent>
-                        <Typography variant="h6" color="primary">
-                          Accuracy
-                        </Typography>
-                        <Typography variant="body2" color="textSecondary">
-                          Overall success rate of predictions, showing how often
-                          the system correctly identifies all cases.
-                        </Typography>
-                      </CardContent>
-                    </Card>
-                  </Grid>
-                  <Grid item xs={12} sm={6} lg={3}>
-                    <Card variant="outlined">
-                      <CardContent>
-                        <Typography variant="h6" color="primary">
-                          Precision
-                        </Typography>
-                        <Typography variant="body2" color="textSecondary">
-                          Measures the accuracy of positive predictions, helping
-                          avoid false alarms.
-                        </Typography>
-                      </CardContent>
-                    </Card>
-                  </Grid>
-                  <Grid item xs={12} sm={6} lg={3}>
-                    <Card variant="outlined">
-                      <CardContent>
-                        <Typography variant="h6" color="primary">
-                          Recall
-                        </Typography>
-                        <Typography variant="body2" color="textSecondary">
-                          Indicates how well the system captures actual
-                          failures, minimizing missed detections.
-                        </Typography>
-                      </CardContent>
-                    </Card>
-                  </Grid>
-                  <Grid item xs={12} sm={6} lg={3}>
-                    <Card variant="outlined">
-                      <CardContent>
-                        <Typography variant="h6" color="primary">
-                          F1 Score
-                        </Typography>
-                        <Typography variant="body2" color="textSecondary">
-                          Balanced measure combining precision and recall for
-                          overall system effectiveness.
-                        </Typography>
-                      </CardContent>
-                    </Card>
-                  </Grid>
-                </Grid>
-              </CardContent>
-            </Card>
-          </>
+          <TechnicalDashboard data={data} performance={performance} />
         )}
 
         <Card sx={{ mt: 4 }}>

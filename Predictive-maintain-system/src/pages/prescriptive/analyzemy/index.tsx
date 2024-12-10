@@ -1,8 +1,15 @@
 "use client";
-import ContributionsChart from "@/components/prescriptive/ContributionsChart";
-import { fetchContributions } from "@/services/api";
-import { useSearchParams } from "next/navigation";
+
+
+
+import { useRouter, useSearchParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
+import { Box, Tab, Tabs, Paper, Typography, Alert, Container, CircularProgress, Button } from "@mui/material";
+import Swal from "sweetalert2";
+import { fetchContributions } from "@/services/api";
+import ContributionsChart from "@/components/prescriptive/ContributionsChart";
+import Diagnose from "../diagnose";
+import FailureDetails from "@/components/prescriptive/FailureDetails";
 
 interface Contributions {
   [feature: string]: number[];
@@ -13,8 +20,10 @@ interface ContributionData {
 }
 
 export default function AnalyzeFailurePage() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const data = searchParams.get("data");
+  const [activeTab, setActiveTab] = useState(0);
 
   const failureDataPassed = React.useMemo(() => {
     if (data) {
@@ -28,128 +37,123 @@ export default function AnalyzeFailurePage() {
     return null;
   }, [data]);
 
+  if (!failureDataPassed) {
+    return (
+      <Container maxWidth="md" sx={{ textAlign: "center", mt: 4 }}>
+        <Alert severity="error">Error: Invalid or missing failure data.</Alert>
+        <Button
+          variant="contained"
+          color="primary"
+          sx={{ mt: 2 }}
+          onClick={() => router.push("/")}
+        >
+          Go Back
+        </Button>
+      </Container>
+    );
+  }
+
   const [possibleCauses, setPossibleCauses] = useState<string[]>([]);
   const [solutions, setSolutions] = useState<string[]>([]);
-  const [additionalObservations] = useState<string>("");
-  const [contributionData, setContributionData] =
-    useState<ContributionData | null>(null);
+  const [contributionData, setContributionData] = useState<ContributionData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
-  useEffect(() => {
-    const getContributions = async () => {
-      try {
-        const data = await fetchContributions(failureDataPassed);
-        setContributionData(data);
-      } catch (error) {
-        console.error("Error fetching contributions:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    getContributions();
-  }, []);
+  const failureCausesData: Record<string, { causes: string[]; solutions: string[] }> = {};
 
   useEffect(() => {
-    if (failureDataPassed) {
-      const failureType = failureDataPassed.type;
-      const failureData = failureCausesData[failureType];
-
-      if (failureData) {
-        setPossibleCauses(failureData.causes);
-        setSolutions(failureData.solutions);
-      }
+    const failureData = failureCausesData[failureDataPassed.Failure_Type_Name];
+    if (failureData) {
+      setPossibleCauses(failureData.causes);
+      setSolutions(failureData.solutions);
+    } else {
+      setPossibleCauses(["No preventive measures for this failure type."]);
+      setSolutions(["No solutions available for this failure type."]);
     }
   }, [failureDataPassed]);
 
-  const failureCausesData: Record<
-    string,
-    { causes: string[]; solutions: string[] }
-  > = {
-    "Drill Failure": {
-      causes: [
-        "Worn out drill bits",
-        "Improper speed settings",
-        "Material hardness mismatch",
-      ],
-      solutions: [
-        "Replace drill bits",
-        "Adjust speed settings",
-        "Use appropriate drill bit for material",
-      ],
-    },
-    "Motor Failure": {
-      causes: [
-        "Overheating",
-        "Bearing wear",
-        "Electrical issues",
-        "Lack of lubrication",
-      ],
-      solutions: [
-        "Improve cooling",
-        "Replace bearings",
-        "Check electrical connections",
-        "Apply proper lubrication",
-      ],
-    },
-    "Pump Failure": {
-      causes: [
-        "Cavitation",
-        "Seal failure",
-        "Impeller damage",
-        "Suction problems",
-      ],
-      solutions: [
-        "Check inlet conditions",
-        "Replace seals",
-        "Inspect/replace impeller",
-        "Verify suction line",
-      ],
-    },
-  };
+  useEffect(() => {
+    if (failureDataPassed) {
+      setLoading(true);
+      Swal.fire({
+        title: "Loading contributions...",
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        },
+      });
 
-  if (!failureDataPassed) {
-    return <p>Error: Invalid or missing failure data.</p>;
-  }
-
-  if (loading) {
-    return <div>Loading...</div>;
-  }
+      fetchContributions(failureDataPassed)
+        .then((response) => {
+          setContributionData(response);
+          Swal.close();
+        })
+        .catch((error) => {
+          console.error("Error fetching contributions:", error);
+          Swal.fire({
+            icon: "error",
+            title: "Oops...",
+            text: "Failed to fetch contributions data!",
+          });
+        })
+        .finally(() => {
+          setLoading(false);
+        });
+    }
+  }, [failureDataPassed]);
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-6">Failure Analysis Results</h1>
-      {contributionData && (
-        <ContributionsChart contributions={contributionData.contributions} />
-      )}
-      <div className="mt-8">
-        <h2 className="text-2xl font-semibold mb-4">Possible Causes</h2>
-        <ul className="list-disc pl-6 mb-6">
-          {possibleCauses.map((cause, index) => (
-            <li key={index} className="mb-2">
-              {cause}
-            </li>
-          ))}
-        </ul>
+    <Container maxWidth="lg" sx={{ mt: 4 }}>
+      <Typography variant="h4" fontWeight="bold" gutterBottom>
+        Failure Analysis
+      </Typography>
 
-        <h2 className="text-2xl font-semibold mb-4">Recommended Solutions</h2>
-        <ul className="list-disc pl-6 mb-6">
-          {solutions.map((solution, index) => (
-            <li key={index} className="mb-2">
-              {solution}
-            </li>
-          ))}
-        </ul>
+      {loading ? (
+        <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
+          <CircularProgress />
+        </Box>
+      ) : (
+        <>
+          {contributionData && (
+            <Box sx={{ textAlign: "center", mb: 4 }}>
+              <ContributionsChart contributions={contributionData?.contributions} />
+            </Box>
+          )}
 
-        {additionalObservations && (
-          <div className="mb-6">
-            <h2 className="text-2xl font-semibold mb-4">
-              Additional Observations
-            </h2>
-            <p className="text-gray-700">{additionalObservations}</p>
-          </div>
-        )}
-      </div>
-    </div>
+            <Paper elevation={3} sx={{ p: 4, mb: 4 }}>
+            <Typography variant="h5" fontWeight="bold" gutterBottom>
+              Failure Type: {failureDataPassed.Failure_Type_Name}
+            </Typography>
+            <Typography variant="body1" color="textSecondary" gutterBottom></Typography>
+              Below is an analysis of the possible causes and solutions for the failure type: <strong>{failureDataPassed.Failure_Type_Name}</strong>.
+            </Paper>
+        </>)}
+      <Typography variant="h6" fontWeight="bold" gutterBottom>
+        Possible Causes:
+      </Typography>
+      <ul>
+        {possibleCauses.map((cause, index) => (
+          <li key={index}>
+            <Typography variant="body1">{cause}</Typography>
+          </li>
+        ))}
+      </ul>
+    <Box sx={{ width: "100%" }}>
+        <Tabs
+          value={activeTab}
+          onChange={(e, newValue) => setActiveTab(newValue)}
+          sx={{ mb: 3 }}
+          indicatorColor="primary"
+          textColor="primary"
+          centered
+        >
+          <Tab label="Diagnose Predicted Failure" />
+          <Tab label="General Failure Analysis" />
+        </Tabs>
+
+        <Box>
+          {activeTab === 0 ? <Diagnose /> : <FailureDetails />}
+        </Box>
+      </Box>
+    </Container>
   );
 }
