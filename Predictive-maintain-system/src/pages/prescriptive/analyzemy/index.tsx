@@ -1,7 +1,5 @@
 "use client";
 
-
-
 import { useRouter, useSearchParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { Box, Tab, Tabs, Paper, Typography, Alert, Container, CircularProgress, Button } from "@mui/material";
@@ -89,11 +87,11 @@ export default function AnalyzeFailurePage() {
         })
         .catch((error) => {
           console.error("Error fetching contributions:", error);
-          Swal.fire({
-            icon: "error",
-            title: "Oops...",
-            text: "Failed to fetch contributions data!",
-          });
+          // Swal.fire({
+          //   icon: "error",
+          //   title: "Oops...",
+          //   text: "Failed to fetch contributions data!",
+          // });
         })
         .finally(() => {
           setLoading(false);
