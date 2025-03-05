@@ -384,11 +384,12 @@ import Chart1 from "@/components/preprocessor/optionals/Chart1";
 import Chart2 from "@/components/preprocessor/optionals/Chart2";
 import StatisticalGrid from "@/components/preprocessor/StatisticalGrid";
 import SensorStatus from "@/components/preprocessor/SensorStatus";
+import { BACKEND_PORT } from "@/config/consts";
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
 const Dashboard: React.FC = () => {
-  const { rawData, processedData } = useSocket("http://localhost:8000");
+  const { rawData, processedData } = useSocket(BACKEND_PORT);
   const [graphData, setGraphData] = useState<any[]>([]);
   const [showProcessed, setShowProcessed] = useState(true);
   const maxDataPoints = 50; // Limit number of data points displayed
