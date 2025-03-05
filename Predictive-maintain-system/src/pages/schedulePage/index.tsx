@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react';
 import NAVBAR from "@/components/navBar";
-import { getFirestore, collection, getDocs, query, where, orderBy } from 'firebase/firestore';
+import { getFirestore, collection, getDocs, query } from 'firebase/firestore';
 import { initializeApp } from 'firebase/app';
 
 const firebaseConfig = {
@@ -10,14 +10,13 @@ const firebaseConfig = {
   storageBucket: "predictivemaintenancesystem.firebasestorage.app",
   messagingSenderId: "301576079277",
   appId: "1:301576079277:web:09b3d0d063246a591d4324"
-
 };
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 function SchedulePage() {
-
   const [failureList, setFailureList] = useState([]);
+
   useEffect(() => {
     const fetchFailureTypes = async () => {
       const issueCollection = collection(db, 'Issue list');
@@ -29,7 +28,8 @@ function SchedulePage() {
         .sort((a, b) => {
           const priority = { 'H': 1, 'M': 2, 'L': 3 };
           return priority[a.Type] - priority[b.Type];
-        });
+        })
+        .slice(0, 10); 
       setFailureList(failures);
     };
     fetchFailureTypes();
@@ -38,6 +38,7 @@ function SchedulePage() {
   const formatTime = (date) => {
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
   };
+
   const getTimeIntervals = () => {
     const intervals = [];
     let currentTime = new Date();
@@ -49,6 +50,7 @@ function SchedulePage() {
     }
     return intervals;
   };
+
   const timeIntervals = getTimeIntervals();
 
   return (
@@ -62,7 +64,7 @@ function SchedulePage() {
       <div className="flex flex-col sm:flex-row items-center m-8 mb-10">
         <div className="w-full sm:grid sm:grid-cols-2">
           <div className="w-11/12">
-            <span className="text-base sm:text-lg font-bold">Automatically prioritize the  maintenance schedules weekly based  on the severity.</span>
+            <span className="text-base sm:text-lg font-bold">Automatically prioritize the maintenance schedules weekly based on the severity.</span>
             <form>
                 <div className="rounded-xl shadow-md h-full mt-8" style={{ backgroundColor: "#EEFFFF" }}>
                   <div className="grid grid-cols-1 gap-2 p-5">
@@ -89,7 +91,7 @@ function SchedulePage() {
                   <div className="grid grid-cols-2">
                     <div className='grid grid-cols-1 gap-2'>
                       {failureList.map((failure, index) => (
-                      <span key={index} className="font-semibold">{index + 1}. {failure['Failure Type']}</span>
+                        <span key={index} className="font-semibold">{index + 1}. {failure['Failure Type']}</span>
                       ))}
                     </div>
                     <div className='grid grid-cols-1 gap-2'>
@@ -104,22 +106,22 @@ function SchedulePage() {
         </div>
       </div>
       <div className="m-8 ms-w-full grid grid-cols-2">
-        <span className="text-lg font-bold">After checking issues mechanic identify not issues in predictded result.</span>
+        <span className="text-lg font-bold">After checking issues mechanic identify not issues in predicted result.</span>
       </div>
       <div className="m-8 w-11/12">
         <input type="text" className="w-full me-5 border py-3 h-32 rounded-lg shadow-md" />
         <div className='flex justify-end mt-5'>
-        <button
+          <button
             type="button"
             className="font-bold text-white shadow-md p-3 rounded-lg w-24"
             style={{ backgroundColor: "#033CAA" }}
-        >
+          >
             Report
-        </button>
+          </button>
         </div>
       </div>
     </main>
-  )
+  );
 }
 
-export default SchedulePage
+export default SchedulePage;
