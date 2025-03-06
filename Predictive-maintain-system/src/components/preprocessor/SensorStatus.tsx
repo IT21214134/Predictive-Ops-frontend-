@@ -81,9 +81,9 @@ const SensorStatus = ({ name, value, processedValue, nullFlag, anomalyFlag }: Se
                 }`}
             >
                 {isNull
-                    ? `Processed to an average value: ${processedValue.toFixed(2)}`
+                    ? `Processed to an average value: ${processedValue?.toFixed(2)}`
                     : isAnomalous
-                    ? `Processed to an acceptable range value: ${processedValue.toFixed(2)}`
+                    ? `Processed to an acceptable range value: ${processedValue?.toFixed(2)}`
                     : `Raw value: ${value.toFixed(2)}`}
             </div>
 
