@@ -70,7 +70,7 @@ function Signup() {
       Swal.fire("Success", "User added successfully", "success");
       await sessionStorage.setItem("user", values.email);
       await localStorage.setItem("uid", user.uid);
-      router.push("/home");
+      router.push("/preprocessor");
     } catch (error) {
       Swal.fire("Error", "Email is already used or invalid", "error");
       console.error("Error signing up:", error);

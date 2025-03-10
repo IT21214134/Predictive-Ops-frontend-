@@ -385,6 +385,7 @@ import Chart2 from "@/components/preprocessor/optionals/Chart2";
 import StatisticalGrid from "@/components/preprocessor/StatisticalGrid";
 import SensorStatus from "@/components/preprocessor/SensorStatus";
 import { BACKEND_PORT } from "@/config/consts";
+import NAVBAR from "@/components/navBar";
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
@@ -402,6 +403,8 @@ const Dashboard: React.FC = () => {
       });
     }
   }, [rawData, processedData]);
+
+  console.log(processedData)
 
   const toggleProcessed = () => setShowProcessed(!showProcessed);
 
@@ -454,6 +457,71 @@ const Dashboard: React.FC = () => {
 
   return (
     <>
+    <NAVBAR />
+    <div className="p-6 bg-gray-100  px-6 py-4"> {/*min-h-screen*/}
+        <h1 className="text-2xl font-bold text-gray-800 mb-4 text-center">Real-Time Sensor Statuses</h1>
+
+        {/* Overall Health Status */}
+        {rawData && (
+          <div className="mb-6 text-center">
+            <span
+              className={`px-4 py-2 rounded-full text-white font-bold ${rawData.vibration_1_null_flag == 0 && rawData.vibration_2_null_flag == 0 && rawData.vibration_3_null_flag == 0 && rawData.temperature_null_flag == 0 && rawData.rpm_1_null_flag == 0
+                && rawData.overall_health_status === "Healthy"
+                ? "bg-green-500"
+                : "bg-gradient-to-r from-red-500 to-orange-500 bg-red-500" //bg-red-500
+                }`}
+            >
+              {rawData.vibration_1_null_flag == 0 && rawData.vibration_2_null_flag == 0 && rawData.vibration_3_null_flag == 0 && rawData.temperature_null_flag == 0 && rawData.rpm_1_null_flag == 0
+                && rawData.overall_health_status === "Healthy" ? "Healthy" : "Cautious"}
+            </span>
+          </div>
+        )}
+
+        
+    {/* Sensor Cards */}
+    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">
+          {rawData && (
+            <>
+              <SensorStatus
+                name="Vibration (1)"
+                value={rawData?.vibration_1}
+                processedValue={processedData?.processed_data?.vibration_1}
+                nullFlag={rawData?.vibration_1_null_flag}
+                anomalyFlag={rawData?.vibration_anomaly_flag}
+              />
+              <SensorStatus
+                name="Vibration (2)"
+                value={rawData?.vibration_2}
+                processedValue={processedData?.processed_data?.vibration_2}
+                nullFlag={rawData?.vibration_2_null_flag}
+                anomalyFlag={rawData?.vibration_anomaly_flag}
+              />
+              <SensorStatus
+                name="Vibration (3)"
+                value={rawData?.vibration_3}
+                processedValue={processedData?.processed_data?.vibration_3}
+                nullFlag={rawData?.vibration_3_null_flag}
+                anomalyFlag={rawData?.vibration_anomaly_flag}
+              />
+              <SensorStatus
+                name="Temperature"
+                value={rawData.temperature}
+                processedValue={processedData?.processed_data?.temperature}
+                nullFlag={rawData.temperature_null_flag}
+                anomalyFlag={rawData.temperature_anomaly_flag}
+              />
+              <SensorStatus
+                name="RPM"
+                value={rawData.rpm}
+                processedValue={processedData?.processed_data.rpm}
+                nullFlag={rawData.rpm_1_null_flag}
+                anomalyFlag={rawData.rpm_anomaly_flag}
+              />
+            </>
+          )}
+        </div>
+      </div>
+
       <Box sx={{ p: 4 }}>
         <Typography className="text-center" variant="h4" sx={{ mb: 4 }}>
           Real-Time Sensor Dashboard
@@ -505,70 +573,6 @@ const Dashboard: React.FC = () => {
           </Grid> */}
         </Grid>
       </Box>
-
-
-      <div className="p-6 bg-gray-100 "> {/*min-h-screen*/}
-        <h1 className="text-2xl font-bold text-gray-800 mb-4 text-center">Real-Time Sensor Statuses</h1>
-
-        {/* Overall Health Status */}
-        {rawData && (
-          <div className="mb-6 text-center">
-            <span
-              className={`px-4 py-2 rounded-full text-white font-bold ${rawData.vibration_1_null_flag == 0 && rawData.vibration_2_null_flag == 0 && rawData.vibration_3_null_flag == 0 && rawData.temperature_null_flag == 0 && rawData.rpm_1_null_flag == 0
-                && rawData.overall_health_status === "Healthy"
-                ? "bg-green-500"
-                : "bg-gradient-to-r from-red-500 to-orange-500 bg-red-500" //bg-red-500
-                }`}
-            >
-              {rawData.vibration_1_null_flag == 0 && rawData.vibration_2_null_flag == 0 && rawData.vibration_3_null_flag == 0 && rawData.temperature_null_flag == 0 && rawData.rpm_1_null_flag == 0
-                && rawData.overall_health_status === "Healthy" ? "Healthy" : "Cautious"}
-            </span>
-          </div>
-        )}
-
-        {/* Sensor Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">
-          {rawData && (
-            <>
-              <SensorStatus
-                name="Vibration (1)"
-                value={rawData?.vibration_1}
-                processedValue={processedData?.processed_data?.vibration_1}
-                nullFlag={rawData?.vibration_1_null_flag}
-                anomalyFlag={rawData?.vibration_anomaly_flag}
-              />
-              <SensorStatus
-                name="Vibration (2)"
-                value={rawData?.vibration_2}
-                processedValue={processedData?.processed_data?.vibration_2}
-                nullFlag={rawData?.vibration_2_null_flag}
-                anomalyFlag={rawData?.vibration_anomaly_flag}
-              />
-              <SensorStatus
-                name="Vibration (3)"
-                value={rawData?.vibration_3}
-                processedValue={processedData?.processed_data?.vibration_3}
-                nullFlag={rawData?.vibration_3_null_flag}
-                anomalyFlag={rawData?.vibration_anomaly_flag}
-              />
-              <SensorStatus
-                name="Temperature"
-                value={rawData.temperature}
-                processedValue={processedData?.processed_data?.temperature}
-                nullFlag={rawData.temperature_null_flag}
-                anomalyFlag={rawData.temperature_anomaly_flag}
-              />
-              <SensorStatus
-                name="RPM"
-                value={rawData.rpm}
-                processedValue={processedData?.processed_data.rpm}
-                nullFlag={rawData.rpm_1_null_flag}
-                anomalyFlag={rawData.rpm_anomaly_flag}
-              />
-            </>
-          )}
-        </div>
-      </div>
 
 
       <Chart1 />
