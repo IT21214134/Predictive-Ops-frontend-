@@ -45,10 +45,11 @@ export default function Navbar() {
         <div className="hidden lg:flex space-x-6">
           <ul className="flex space-x-4">
             {[
-              { name: "Home", path: "/home" },
+              { name: "Home", path: "/preprocessor" },
               { name: "Schedule Page", path: "/schedulePage" },
               { name: "Predict Page", path: "/predictPage" },
               { name: "Fixing Page", path: "/fix" },
+              { name: "Predictions Analysis", path: "/predictions" },
             ].map((item) => (
               <li key={item.path}>
                 <Link

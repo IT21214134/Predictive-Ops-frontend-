@@ -148,11 +148,11 @@ function SchedulePage() {
       <div className="container mx-auto px-6 py-6 bg-sky-100 flex-grow">
         <div className="grid grid-cols-5 gap-4 mt-6">
           {[
-            { label: "Vibration 1", value: sensorValues.vibration_1 },
-            { label: "Vibration 2", value: sensorValues.vibration_2 },
-            { label: "Vibration 3", value: sensorValues.vibration_3 },
-            { label: "Temperature", value: sensorValues.temperature },
-            { label: "RPM", value: sensorValues.rpm_1 },
+            { label: "Vibration 1", value: Math.round((parseFloat(sensorValues.vibration_1) + Number.EPSILON) * 100) / 100 },
+            { label: "Vibration 2", value: Math.round((parseFloat(sensorValues.vibration_2) + Number.EPSILON) * 100) / 100 },
+            { label: "Vibration 3", value: Math.round((parseFloat(sensorValues.vibration_3) + Number.EPSILON) * 100) / 100 },
+            { label: "Temperature", value: Math.round((parseFloat(sensorValues.temperature) + Number.EPSILON) * 100) / 100 },
+            { label: "RPM", value: Math.round((parseFloat(sensorValues.rpm_1) + Number.EPSILON) * 100) / 100 },
           ].map((sensor, index) => (
             <div
               key={index}

@@ -31,7 +31,7 @@ export default function Login() {
       if (user) {
         await sessionStorage.setItem("user", user.email);
         await localStorage.setItem("uid", user.uid);
-        router.push("/home");
+        router.push("/preprocessor");
       }
     } catch (error) {
       console.error("Error signing in:", error);
