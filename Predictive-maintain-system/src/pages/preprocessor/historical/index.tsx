@@ -294,7 +294,7 @@
 
 import React, { useState } from "react";
 import { collection, query, where, getDocs } from "firebase/firestore";
-import { db } from "@/config/firebase";
+import { firestore as db } from "../../../../firebaseconfig";
 import { format } from "date-fns";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 
