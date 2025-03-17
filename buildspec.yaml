@@ -1,0 +1,34 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      nodejs: 20
+    commands:
+      -  echo Changing directory to Predictive-maintain-system...
+      -  cd Predictive-maintain-system
+      -  echo Installing dependencies...
+      -  npm install
+  pre_build:
+    commands:
+      -  echo Fetching environment variables...
+      -  echo "apiKey=$apiKey" > Predictive-maintain-system/.env
+      -  echo "authDomain=$authDomain" >> Predictive-maintain-system/.env
+      -  echo "projectId=$projectId" >> Predictive-maintain-system/.env
+      -  echo "storageBucket=$storageBucket" >> Predictive-maintain-system/.env
+      -  echo "messagingSenderId=$messagingSenderId" >> Predictive-maintain-system/.env
+      -  echo "appId=$appId" >> Predictive-maintain-system/.env
+      # -  aws ssm get-parameters --names "DATABASE_URL" "API_KEY" --with-decryption --region us-east-1 --query "Parameters[*].{Name:Name,Value:Value}" > env.json
+      # -  jq -r '.[] | "\(.Name)=\(.Value)"' env.json > Predictive-maintain-system/.env
+  build:
+    commands:
+      -  echo Changing directory to Predictive-maintain-system...
+      -  cd Predictive-maintain-system
+      -  echo Build started...
+      -  npm run build
+      -  echo Build completed ==> Exporting artifacts...
+artifacts:
+  files:
+    -  '**/*'
+  discard-paths: no
+  base-directory: Predictive-maintain-system/out
