@@ -297,6 +297,7 @@ import { collection, query, where, getDocs } from "firebase/firestore";
 import { firestore as db } from "../../../../firebaseconfig";
 import { format } from "date-fns";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
+import NAVBAR from "@/components/navBar";
 
 const AnomalyViewer: React.FC = () => {
   const [startDate, setStartDate] = useState<string>("");
@@ -340,6 +341,7 @@ const AnomalyViewer: React.FC = () => {
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
+      <NAVBAR />
       <h1 className="text-2xl font-bold text-gray-800 mb-6 text-center">Historical Anomaly Viewer</h1>
 
       <div className="flex flex-col md:flex-row gap-4 justify-center">
@@ -507,6 +509,13 @@ const AnomalyViewer: React.FC = () => {
       {anomalies.length === 0 && !loading && (
         <p className="text-gray-600 mt-4">No anomalies found for the selected period.</p>
       )}
+
+      <footer className="bg-gray-800 text-white text-center py-4">
+        <p>
+          © {new Date().getFullYear()} Machine Monitoring System. All rights
+          reserved.
+        </p>
+      </footer>
     </div>
   );
 };
