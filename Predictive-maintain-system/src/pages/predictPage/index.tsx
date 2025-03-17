@@ -131,7 +131,7 @@ function PredictPage() {
 
         <div className="mt-8 bg-gradient-to-br from-blue-100 to-blue-300 shadow-lg rounded-xl p-6 border border-black">
           <h2 className="text-2xl font-bold text-black-700 mb-4 text-center">
-            AI Verified Result
+            Predicted Result
           </h2>
           <div className="flex items-center justify-center">
             {predictionResult && (
