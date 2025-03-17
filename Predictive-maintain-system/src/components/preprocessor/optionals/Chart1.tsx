@@ -150,6 +150,7 @@
 import React, { useEffect, useState } from "react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from "recharts";
 import useSocket from "@/(hooks)/useSocket";
+import { BACKEND_PORT } from "@/config/consts";
 
 type SensorData = {
   timestamp: string;
@@ -170,7 +171,7 @@ type SensorData = {
 };
 
 const Dashboard = () => {
-  const { rawData, processedData } = useSocket("http://localhost:8000");
+  const { rawData, processedData } = useSocket(BACKEND_PORT);
   const [dataBuffer, setDataBuffer] = useState<SensorData[]>([]);
   const [showStreams, setShowStreams] = useState({
     vibration_1: true,
@@ -192,30 +193,30 @@ const Dashboard = () => {
   // Maintain rolling data buffer
   useEffect(() => {
     if (rawData) {
-      setDataBuffer((prev) => [...prev.slice(-9), rawData]);
+      setDataBuffer((prev) => [...prev.slice(-25), rawData]);
     }
   }, [rawData]);
 
   useEffect(() => {
     if (processedData) {
-      setpDataBuffer((prev) => [...prev.slice(-9), processedData.processed_data]);
+      setpDataBuffer((prev) => [...prev.slice(-25), processedData.processed_data]);
     }
   }, [processedData]);
 
   return (
-    <div className="p-6 bg-white-100"> {/*min-h-screen*/}
+    <div className="p-6 bg-gray-100"> {/*min-h-screen*/}
       {/* <h1 className="text-2xl font-bold mb-6 text-gray-800">Sensor Dashboard</h1> */}
 
       {/* Toggle Streams */}
-      <div className="bg-white rounded-lg shadow p-4 mb-6">
-        <h2 className="text-lg font-semibold mb-4 text-gray-700 text-center">Toggle Streams</h2>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+      <div className="bg-gray-200 rounded-lg shadow p-4 mb-6">
+        <h2 className="text-lg font-semibold mb-4 text-gray-700 text-center">Toggle Data Streams</h2>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mx-28">
           {Object.keys(showStreams).map((key) => (
             <div
               key={key}
               className="flex items-center justify-between p-2 border rounded-md bg-gray-50 hover:bg-gray-100 transition"
             >
-              <span className="text-sm text-gray-600">{key.replace(/_/g, " ")}</span>
+              <span className="text-sm text-gray-600">{/*key.replace(/_/g, " ")*/key === "vibration_1" ? "Vibration_1" : key === "vibration_2" ? "Vibration_2" : key === "vibration_3" ? "Vibration_3" : key === "temperature" ? "Temperature" : "RPM"}</span>
               <label className="relative inline-flex items-center cursor-pointer">
                 <input
                   type="checkbox"
@@ -257,7 +258,7 @@ const Dashboard = () => {
           {showStreams.temperature && <Line type="monotone" dataKey="temperature" stroke="#ff0000" />}
           {showStreams.rpm && <Line type="monotone" dataKey="rpm" stroke="#0000ff" />}
         </LineChart>
-        </center>
+      </center>
     </div>
   );
 };

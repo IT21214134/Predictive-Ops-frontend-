@@ -50,6 +50,7 @@ export default function Navbar() {
               { name: "Predict Page", path: "/predictPage" },
               { name: "Fixing Page", path: "/fix" },
               { name: "Predictions Analysis", path: "/predictions" },
+              { name: "Data Anomaly History", path: "/preprocessor/historical" },
             ].map((item) => (
               <li key={item.path}>
                 <Link

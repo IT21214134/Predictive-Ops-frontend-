@@ -154,7 +154,7 @@ function SchedulePage() {
     try {
       for (const prediction of prioritizedPredictions) {
         let addHours =
-          prediction.predicted_failure_type === "Trimmer Bearing Fault" ? 6 : 4;
+          prediction.predicted_failure_type === "Trimmer Bearing Fault" ? 2 : 3;
 
         let startTime = new Date(currentTime);
 
