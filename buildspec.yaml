@@ -11,18 +11,17 @@ phases:
       -  npm install
   build:
     commands:
-      -  echo Changing directory to Predictive-maintain-system...
+      #-  echo Changing directory to Predictive-maintain-system...
       -  ls
-      -  cd Predictive-maintain-system
       -  echo Fetching environment variables...
       # Write .env directly inside the subdirectory
-      -  ls
       -  echo "apiKey=$apiKey" > .env
       -  echo "authDomain=$authDomain" >> .env
       -  echo "projectId=$projectId" >> .env
       -  echo "storageBucket=$storageBucket" >> .env
       -  echo "messagingSenderId=$messagingSenderId" >> .env
       -  echo "appId=$appId" >> .env
+
       -  echo Build started...
       -  npm run build
       -  echo Build completed ==> Exporting artifacts...
@@ -30,4 +29,4 @@ artifacts:
   files:
     -  '**/*'
   discard-paths: no
-  base-directory: Predictive-maintain-system/out
+  base-directory: out
