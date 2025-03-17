@@ -3,16 +3,17 @@ import useSocket from '@/(hooks)/useSocket';
 import Graph from '@/components/preprocessor/Graph';
 import AnomalyCard from '@/components/preprocessor/AnomalyCard';
 import FilterControls from '@/components/preprocessor/FilterControls';
+import { BACKEND_PORT } from '@/config/consts';
 
 interface DataPoint {
   timestamp: string;
   [key: string]: number | string | undefined;
 }
 
-const MAX_HISTORY = 50; // Number of data points to retain for graphs.
+const MAX_HISTORY = 100; // Number of data points to retain for graphs.
 
 const Dashboard: React.FC = () => {
-  const { rawData, processedData } = useSocket("http://localhost:8000");
+  const { rawData, processedData } = useSocket(BACKEND_PORT);
   const [activeSensors, setActiveSensors] = useState<string[]>([
     "vibration_1",
     "vibration_2",
@@ -30,7 +31,7 @@ const Dashboard: React.FC = () => {
           if (!updatedHistory[key]) updatedHistory[key] = [];
           updatedHistory[key] = [
             ...updatedHistory[key],
-            { timestamp: rawData.timestamp, value: rawData[key] },
+            { timestamp: new Date(rawData.timestamp).toLocaleString(), value: rawData[key] },
           ].slice(-MAX_HISTORY); // Maintain a fixed-length buffer.
         });
         return updatedHistory;
@@ -46,7 +47,7 @@ const Dashboard: React.FC = () => {
 
   return (
     <div className="p-8">
-      <h1 className="text-2xl font-bold mb-4 text-center">Live Sensor Dashboard</h1>
+      <h1 className="text-2xl font-bold mb-4 text-center">Individual Sensor Behaviours</h1>
 
       {/* Anomaly Cards */}
       {/* <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
@@ -74,6 +75,7 @@ const Dashboard: React.FC = () => {
       <FilterControls
         sensors={["vibration_1", "vibration_2", "vibration_3", "temperature", "rpm"]}
         onToggle={handleToggleSensor}
+        activeSensors={activeSensors}
       />
 
       {/* Graphs */}
@@ -83,7 +85,7 @@ const Dashboard: React.FC = () => {
             <Graph
               key={sensor}
               label={sensor}
-              data={dataHistory[sensor]?.map((d) => d.value) || []}
+              data={dataHistory[sensor]?.map((d) => Number(d.value)).filter((v) => !isNaN(v)) || []}
               timestamps={dataHistory[sensor]?.map((d) => d.timestamp) || []}
             /><br /></div>
         ))}

@@ -45,6 +45,7 @@ const Dashboard: React.FC = () => {
       <FilterControls
         sensors={["vibration_1", "vibration_2", "temperature"]}
         onToggle={handleToggleSensor}
+        activeSensors={[]}
       />
 
       {/* Graphs */}
