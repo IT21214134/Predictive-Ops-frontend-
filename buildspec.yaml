@@ -16,7 +16,7 @@ phases:
       -  cd Predictive-maintain-system
       -  echo Fetching environment variables...
       # Write .env directly inside the subdirectory
-      -  cd Predictive-maintain-system
+      -  ls
       -  echo "apiKey=$apiKey" > .env
       -  echo "authDomain=$authDomain" >> .env
       -  echo "projectId=$projectId" >> .env
