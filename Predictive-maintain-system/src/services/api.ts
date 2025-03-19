@@ -1,9 +1,11 @@
 import axios from "axios";
 
-const API_BASE = "http://localhost:5000";
+const API_BASE = "http://localhost:5001"; // Backend URL
 
 export const fetchPredictions = async (data: any) => {
-  const response = await axios.post(`${API_BASE}/predict`, { features: data });
+  const response = await axios.post(`${API_BASE}/analytics/analize`, {
+    features: data,
+  });
   return response.data;
 };
 
