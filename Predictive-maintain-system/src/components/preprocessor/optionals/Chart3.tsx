@@ -3,9 +3,10 @@ import useSocket from '@/(hooks)/useSocket';
 import Graph from '@/components/preprocessor/Graph';
 import AnomalyCard from '@/components/preprocessor/AnomalyCard';
 import FilterControls from '@/components/preprocessor/FilterControls';
+import { BACKEND_PORT } from '@/config/consts';
 
 const Dashboard: React.FC = () => {
-  const { rawData, processedData } = useSocket("http://localhost:8000");
+  const { rawData, processedData } = useSocket(BACKEND_PORT);
   const [activeSensors, setActiveSensors] = useState<string[]>([
     "vibration_1",
     "vibration_2",
@@ -44,6 +45,7 @@ const Dashboard: React.FC = () => {
       <FilterControls
         sensors={["vibration_1", "vibration_2", "temperature"]}
         onToggle={handleToggleSensor}
+        activeSensors={[]}
       />
 
       {/* Graphs */}

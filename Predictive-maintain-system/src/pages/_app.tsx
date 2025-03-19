@@ -1,6 +1,14 @@
 import "@/styles/globals.css";
 import type { AppProps } from "next/app";
+import React from "react";
+import { RealTimeDataProvider } from "../components/RealTimeDataContext";
 
-export default function App({ Component, pageProps }: AppProps) {
-  return <Component {...pageProps} />;
+function MyApp({ Component, pageProps }: AppProps) {
+  return (
+    <RealTimeDataProvider>
+      <Component {...pageProps} />
+    </RealTimeDataProvider>
+  );
 }
+
+export default MyApp;
