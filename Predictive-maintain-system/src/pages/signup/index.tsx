@@ -13,6 +13,7 @@ function Signup() {
   const router = useRouter();
   const [type, setType] = useState(true);
   const [email, setEmail] = useState("");
+  const [mobileNumber, setMobileNumber] = useState("");
   const [password, setPassword] = useState("");
   const [cpassword, setCpassword] = useState("");
   const [isChecked, setIsChecked] = useState(false);
@@ -24,7 +25,7 @@ function Signup() {
   };
 
   const handleSignup = async () => {
-    if (!email || !password || !cpassword) {
+    if (!email || !password || !cpassword || !mobileNumber) {
       Swal.fire("Error", "All fields are required", "error");
       return;
     }
@@ -62,6 +63,8 @@ function Signup() {
       const values = {
         email: email,
         type: "user",
+        uid: user.uid,
+        phone: mobileNumber
       };
 
       const Collection = collection(firestore, "user");
@@ -70,7 +73,7 @@ function Signup() {
       Swal.fire("Success", "User added successfully", "success");
       await sessionStorage.setItem("user", values.email);
       await localStorage.setItem("uid", user.uid);
-      router.push("/preprocessor");
+      router.push("/home");
     } catch (error) {
       Swal.fire("Error", "Email is already used or invalid", "error");
       console.error("Error signing up:", error);
@@ -109,7 +112,6 @@ function Signup() {
                 type="email"
                 required
                 className="block w-full px-3 pt-5 pb-2 rounded-md border shadow-sm placeholder-transparent text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 peer"
-                placeholder="Email Address"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
@@ -123,11 +125,27 @@ function Signup() {
 
             <div className="relative mt-8">
               <input
+                id="mobilePhone"
+                type="number"
+                required
+                className="block w-full px-3 pt-5 pb-2 rounded-md border shadow-sm placeholder-transparent text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 peer"
+                value={mobileNumber}
+                onChange={(e) => setMobileNumber(e.target.value)}
+              />
+              <label
+                htmlFor="mobilePhone"
+                className="absolute left-3 top-2 text-gray-400 text-xs peer-placeholder-shown:top-5 peer-placeholder-shown:text-sm peer-focus:text-indigo-600"
+              >
+                Mobile Phone Number
+              </label>
+            </div>
+
+            <div className="relative mt-8">
+              <input
                 id="password"
                 type="password"
                 required
                 className="block w-full px-3 pt-5 pb-2 rounded-md border shadow-sm placeholder-transparent text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 peer"
-                placeholder="Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
@@ -145,7 +163,6 @@ function Signup() {
                 type="password"
                 required
                 className="block w-full px-3 pt-5 pb-2 rounded-md border shadow-sm placeholder-transparent text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-indigo-600 peer"
-                placeholder="Confirm Password"
                 value={cpassword}
                 onChange={(e) => checkPassword(e.target.value)}
               />
