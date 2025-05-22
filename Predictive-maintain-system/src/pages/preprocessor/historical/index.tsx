@@ -333,7 +333,7 @@ const AnomalyViewer: React.FC = () => {
 
   const processChartData = () => {
     return anomalies.map((anomaly) => ({
-      timestamp: format(new Date(anomaly.timestamp), "HH:mm:ss"),
+      timestamp: new Date(anomaly.timestamp).toLocaleString(),//format(new Date(anomaly.timestamp), "HH:mm:ss"),
       anomalies: anomaly.anomalies?.length,
       nulls: anomaly.nulls?.length,
     }));

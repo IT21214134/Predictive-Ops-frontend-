@@ -84,8 +84,9 @@ const SensorStatus = ({ name, value, processedValue, nullFlag, anomalyFlag }: Se
                     ? `Processed to an average value: ${processedValue?.toFixed(2)}`
                     : isAnomalous
                     ? `Processed to an acceptable range value: ${processedValue?.toFixed(2)}`
-                    : `Raw value: ${value.toFixed(2)}`}
+                    : `Original value: ${value.toFixed(2)}`}
             </div>
+            <div>{name?.startsWith("Vibration") ? "(magnitude)" : name?.startsWith("Temperature") ? "(°C)" : ""}</div>
 
             {/* Status Indicators */}
             <div className="mt-4">
