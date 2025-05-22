@@ -1,8 +1,19 @@
 import React, { useEffect, useState } from "react";
 import { useRealTimeData } from "../../components/RealTimeDataContext";
 import NAVBAR from "@/components/navBar";
-import { firestore } from "../../../firebaseconfig";
-import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { firestore, database } from "../../../firebaseconfig";
+import {
+  collection,
+  addDoc,
+  serverTimestamp,
+  doc,
+  getDoc,
+  where,
+  getDocs,
+  query,
+} from "firebase/firestore";
+import { ref, set } from "firebase/database";
+import axios from "axios";
 
 function PredictPage() {
   const { data: realTimeData } = useRealTimeData();
@@ -15,6 +26,11 @@ function PredictPage() {
   });
 
   const [predictionResult, setPredictionResult] = useState<string | null>(null);
+  const [uid, setUserId] = useState("");
+  const [userData, setUserData] = useState<{
+    email: string;
+    phone: string;
+  } | null>(null);
 
   useEffect(() => {
     if (realTimeData) {
@@ -31,6 +47,44 @@ function PredictPage() {
     }
   }, [realTimeData]);
 
+  const fetchUserData = async (uid: string) => {
+    try {
+      const usersRef = collection(firestore, "user");
+      const q = query(usersRef, where("uid", "==", uid));
+      const querySnapshot = await getDocs(q);
+      
+      if (!querySnapshot.empty) {
+        const userDoc = querySnapshot.docs[0];
+        const userData = userDoc.data();
+        
+        if (userData.email && userData.phone) {
+          setUserData({
+            email: userData.email,
+            phone: userData.phone,
+          });
+        } else {
+          console.error("User data missing email or phone");
+        }
+      } else {
+        console.error("No user found with UID:", uid);
+      }
+    } catch (error) {
+      console.error("Error fetching user data:", error);
+    }
+  };
+
+  useEffect(() => {
+    const storedUserId = localStorage.getItem("uid");
+    console.log("Stored UID from localStorage:", storedUserId);
+    if (storedUserId) {
+      setUserId(storedUserId);
+      fetchUserData(storedUserId);
+    } else {
+      console.error("No UID found in localStorage");
+    }
+  }, []);
+
+
   const handlePredict = async (data: typeof sensorValues) => {
     const payload = {
       Vibration_01: data.vibration_1,
@@ -41,8 +95,6 @@ function PredictPage() {
     };
 
     try {
-      const uid = localStorage.getItem("uid") || "unknown-user";
-
       const response = await fetch(
         "https://us-central1-stellar-verve-446507-j7.cloudfunctions.net/predictionType",
         {
@@ -55,17 +107,74 @@ function PredictPage() {
       );
 
       const result = await response.json();
-
       setPredictionResult(result.predicted_failure_type);
 
-      await addDoc(collection(firestore, `Prediction/`), {
+      const failureType = result.predicted_failure_type;
+      let realtimeData = {
+        flash_light: {
+          drill_issue: false,
+          no_failure: false,
+          trimmer_bearing: false
+        }
+      };
+
+      if (failureType === "No Failure") {
+        realtimeData.flash_light.no_failure = true;
+      } else if (failureType === "Trimmer Bearing Fault") {
+        realtimeData.flash_light.trimmer_bearing = true;
+      } else if (failureType === "Drill Issue") {
+        realtimeData.flash_light.drill_issue = true;
+      }
+
+      await set(ref(database), realtimeData);
+
+      await addDoc(collection(firestore, "Prediction"), {
         input_data: payload,
         prediction_result: result,
         timestamp: serverTimestamp(),
         status: "false",
       });
+      console.log("Prediction stored successfully!", result.predicted_failure_type);
 
-      console.log("Prediction stored successfully!");
+      if (result.predicted_failure_type !== "No Failure" && userData?.email) {
+        try {
+          await axios.post("https://email-1086792422178.us-central1.run.app", {
+            email: [userData.email],
+            prediction_result: result.predicted_failure_type,
+          });
+
+          if (userData?.phone) {
+            const apiUrl = "192.168.1.4:8082";
+            const apiKey = "496c86aa-3f00-48d2-806c-3dff690ad8aa";
+
+            const message =
+              result.predicted_failure_type === "Trimmer Bearing Fault"
+                ? 'Dear Team,\n\nCritical Issue Detected: Trimmer Bearing Fault\n\nBest Regards,\n\nMaintenance Team'
+                : 'Dear Team,\n\nAlert: Drill Issue Detected\n\nBest Regards,\n\nMaintenance Team';
+
+            const requestBody = {
+              to: `+94${userData.phone.substring(1)}`,
+              message: message,
+            };
+            console.log(requestBody);
+
+            console.log("Sending notifications to:", userData.email, userData.phone);
+            
+
+            await axios.post(`//${apiUrl}`, requestBody, {
+              headers: {
+                "Content-Type": "application/json",
+                "Access-Control-Allow-Origin": "*",
+                Authorization: apiKey,
+              },
+            });
+          }
+        } catch (error) {
+          console.error("Error sending notifications:", error);
+        }
+      }
+
+      console.log("Prediction stored and notifications sent successfully!");
     } catch (error) {
       console.error("Error predicting failure:", error);
     }
@@ -114,7 +223,7 @@ function PredictPage() {
                       readOnly
                       className="w-full bg-transparent outline-none text-gray-800"
                     />
-                    <span className="text-blue-500 text-lg">✔️</span>
+                    <span className="text-blue-500 text-lg">✔</span>
                   </div>
                 </div>
               )
@@ -139,7 +248,11 @@ function PredictPage() {
                 className={`text-white text-lg font-semibold px-4 py-2 rounded-lg shadow-md ${
                   predictionResult === "No Failure"
                     ? "bg-green-700"
-                    : "bg-red-700"
+                    : predictionResult === "Trimmer Bearing Fault"
+                    ? "bg-red-700"
+                    : predictionResult === "Drill Issue"
+                    ? "bg-yellow-700"
+                    : "bg-gray-700"
                 }`}
               >
                 {predictionResult}
