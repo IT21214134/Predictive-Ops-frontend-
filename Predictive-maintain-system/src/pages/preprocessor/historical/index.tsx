@@ -340,7 +340,7 @@ const AnomalyViewer: React.FC = () => {
   };
 
   return (
-    <div className="p-6 bg-gray-50 min-h-screen">
+    <div className="p-6 bg-gray-50 min-h-screen flex flex-col">
       <NAVBAR />
       <h1 className="text-2xl font-bold text-gray-800 mb-6 text-center">Historical Anomaly Viewer</h1>
 
@@ -510,7 +510,7 @@ const AnomalyViewer: React.FC = () => {
         <p className="text-gray-600 mt-4">No anomalies found for the selected period.</p>
       )}
 
-      <footer className="bg-gray-800 text-white text-center py-4">
+      <footer className="bg-gray-800 text-white text-center py-4 mt-auto">
         <p>
           © {new Date().getFullYear()} Machine Monitoring System. All rights
           reserved.
