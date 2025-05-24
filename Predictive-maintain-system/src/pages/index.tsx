@@ -137,7 +137,7 @@ export default function Login() {
               <span className="text-sm md:text-lg font-semibold">
                 Don't have an account?{" "}
                 <a
-                  href="/signup/"
+                  href="/signup"
                   className="font-bold ml-1 hover:text-primary-content"
                   style={{ color: "#0A5DFF" }}
                 >
