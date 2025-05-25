@@ -648,7 +648,7 @@ const NonTechnicalDashboard = ({
                         {
                           ...failureFlagData.datasets[0],
                           borderRadius: 6,
-                          maxBarThickness: 50,
+                          maxBarThickness: 100,
                           backgroundColor: [
                             alpha("#00695c", 0.8),
                             alpha("#f9a825", 0.8),
