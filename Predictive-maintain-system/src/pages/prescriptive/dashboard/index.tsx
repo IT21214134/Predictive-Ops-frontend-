@@ -20,6 +20,7 @@ import {
   Container,
   Card,
   CardContent,
+  Skeleton,
 } from "@mui/material";
 
 import React from "react";
@@ -159,11 +160,14 @@ interface NonTechnicalDashboardProps {
   data: DataRow[];
   performance: PerformanceMetrics;
   riskLevel: string;
+  isLoading?: boolean; // Add this prop
 }
+
 const NonTechnicalDashboard = ({
   data,
   performance,
   riskLevel,
+  isLoading = false, // Add default value
 }: NonTechnicalDashboardProps) => {
   const failureFlagDistribution = data.reduce<Record<string, number>>(
     (acc, row) => {
@@ -201,6 +205,19 @@ const NonTechnicalDashboard = ({
 
   const statusColor = getStatusColor(riskLevel);
 
+  const renderMetricValue = (value: number | string, height = 60) => {
+    if (isLoading) {
+      return (
+        <Skeleton
+          variant="rectangular"
+          height={height}
+          sx={{ borderRadius: 1 }}
+        />
+      );
+    }
+    return value;
+  };
+
   return (
     <Container maxWidth="xl">
       <Box sx={{ py: 4 }}>
@@ -208,6 +225,7 @@ const NonTechnicalDashboard = ({
           System Overview
         </Typography>
         <Grid container spacing={4}>
+          {/* System Health Status Card */}
           <Grid item xs={12} md={4}>
             <Card sx={{ height: "100%", bgcolor: statusColor.bg }}>
               <CardContent sx={{ textAlign: "center", py: 4 }}>
@@ -218,7 +236,7 @@ const NonTechnicalDashboard = ({
                   variant="h2"
                   sx={{ color: statusColor.text, mb: 2 }}
                 >
-                  {riskLevel}
+                  {renderMetricValue(riskLevel)}
                 </Typography>
                 <Typography variant="body2" color="textSecondary">
                   Current operational condition
@@ -226,6 +244,8 @@ const NonTechnicalDashboard = ({
               </CardContent>
             </Card>
           </Grid>
+
+          {/* Success Rate Card */}
           <Grid item xs={12} md={4}>
             <Card sx={{ height: "100%" }}>
               <CardContent sx={{ textAlign: "center", py: 4 }}>
@@ -233,7 +253,9 @@ const NonTechnicalDashboard = ({
                   Success Rate
                 </Typography>
                 <Typography variant="h2" sx={{ color: "#1976d2", mb: 2 }}>
-                  {(performance.accuracy * 100 || 0).toFixed(1)}%
+                  {renderMetricValue(
+                    `${(performance.accuracy * 100 || 0).toFixed(1)}%`
+                  )}
                 </Typography>
                 <Typography variant="body2" color="textSecondary">
                   Prediction accuracy rate
@@ -241,6 +263,8 @@ const NonTechnicalDashboard = ({
               </CardContent>
             </Card>
           </Grid>
+
+          {/* Risk Assessment Card */}
           <Grid item xs={12} md={4}>
             <Card sx={{ height: "100%" }}>
               <CardContent sx={{ textAlign: "center", py: 4 }}>
@@ -248,15 +272,16 @@ const NonTechnicalDashboard = ({
                   Risk Assessment
                 </Typography>
                 <Typography variant="h2" sx={{ color: "#f57c00", mb: 2 }}>
-                  {(
-                    (Object.values(failureFlagDistribution).reduce<number>(
-                      (a: number) => a,
-                      1
-                    ) /
-                      data.length) *
-                      100 || 0
-                  ).toFixed(1)}
-                  %
+                  {renderMetricValue(
+                    `${(
+                      (Object.values(failureFlagDistribution).reduce<number>(
+                        (a: number) => a,
+                        1
+                      ) /
+                        data.length) *
+                        100 || 0
+                    ).toFixed(1)}%`
+                  )}
                 </Typography>
                 <Typography variant="body2" color="textSecondary">
                   Potential failure probability
@@ -264,6 +289,7 @@ const NonTechnicalDashboard = ({
               </CardContent>
             </Card>
           </Grid>
+
           <Grid item xs={12}>
             <Card>
               <CardContent>
@@ -303,11 +329,13 @@ export default function Dashboard() {
   });
   const [activeTab, setActiveTab] = useState(0);
   const [riskLevel, setRiskLevel] = useState("Good");
+  const [isLoading, setIsLoading] = useState(true);
 
   // Update the useEffect to properly load data using the loadData and loadMetrics functions
   useEffect(() => {
     async function fetchData() {
       try {
+        setIsLoading(true);
         // Try to load data and metrics concurrently
         const [newData, newMetrics] = await Promise.allSettled([
           loadData(),
@@ -368,6 +396,8 @@ export default function Dashboard() {
           f1_score: 0,
         });
         setRiskLevel("Good");
+      } finally {
+        setIsLoading(false);
       }
     }
 
@@ -396,6 +426,7 @@ export default function Dashboard() {
               data={data}
               performance={performance}
               riskLevel={riskLevel}
+              isLoading={isLoading}
             />
           ) : (
             <TechnicalDashboard data={data} performance={performance} />

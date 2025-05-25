@@ -246,11 +246,11 @@ export default function Diagnose() {
           </form>
 
           <div className="space-y-6">
-            {error && (
-              <div className="bg-red-50 border-l-4 border-red-500 p-6 rounded-lg shadow-md">
+            {error && error === "No suggestions found!" ? (
+              <div className="bg-gray-100 border-l-4 border-gray-400 p-6 rounded-lg shadow-md">
                 <div className="flex items-center">
                   <svg
-                    className="w-6 h-6 text-red-500 mr-3"
+                    className="w-6 h-6 text-gray-400 mr-3"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -262,9 +262,30 @@ export default function Diagnose() {
                       d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                     />
                   </svg>
-                  <p className="text-red-700 font-medium">{error}</p>
+                  <p className="text-gray-700 font-medium">{error}</p>
                 </div>
               </div>
+            ) : (
+              error && (
+                <div className="bg-red-50 border-l-4 border-red-500 p-6 rounded-lg shadow-md">
+                  <div className="flex items-center">
+                    <svg
+                      className="w-6 h-6 text-red-500 mr-3"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                      />
+                    </svg>
+                    <p className="text-red-700 font-medium">{error}</p>
+                  </div>
+                </div>
+              )
             )}
 
             <div className="bg-white rounded-2xl shadow-lg p-8 space-y-6 hover:shadow-xl transition-shadow duration-300">
