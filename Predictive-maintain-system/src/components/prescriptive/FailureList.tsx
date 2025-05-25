@@ -305,7 +305,15 @@ export default function FailureList() {
                 sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
               >
                 <TableCell>
-                  {new Date(row.timestamp).toLocaleString()}
+                  {new Date(row.timestamp).toLocaleString("en-US", {
+                    year: "numeric",
+                    month: "2-digit",
+                    day: "2-digit",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    second: "2-digit",
+                    hour12: false,
+                  })}
                 </TableCell>
                 <TableCell>{row.vibration_01.toFixed(2)}</TableCell>
                 <TableCell>{row.vibration_02.toFixed(2)}</TableCell>
