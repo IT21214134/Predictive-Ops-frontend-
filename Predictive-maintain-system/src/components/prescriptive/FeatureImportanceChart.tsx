@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { CircularProgress, Box, Typography } from "@mui/material";
 import { Pie } from "react-chartjs-2";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
+import { API_CONFIG } from "@/pages/config/api";
 
 // Register Chart.js components
 ChartJS.register(ArcElement, Tooltip, Legend);
@@ -17,7 +18,7 @@ const FeatureImportanceChart: React.FC = () => {
 
   // Fetch data from the API
   useEffect(() => {
-    fetch("http://127.0.0.1:5001/model/feature-importance")
+    fetch(`${API_CONFIG.baseUrl}${API_CONFIG.endpoints.featureImportance}`)
       .then((response) => response.json())
       .then((result) => {
         if (result.status === "success") {

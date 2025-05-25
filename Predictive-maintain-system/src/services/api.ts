@@ -1,11 +1,11 @@
+import { API_CONFIG } from "@/pages/config/api";
 import axios from "axios";
 
-const API_BASE = "http://localhost:5001"; // Backend URL
-
 export const fetchPredictions = async (data: any) => {
-  const response = await axios.post(`${API_BASE}/analytics/analize`, {
-    features: data,
-  });
+  const response = await axios.post(
+    `${API_CONFIG.baseUrl}${API_CONFIG.endpoints.analyze}`,
+    { features: data }
+  );
   return response.data;
 };
 
@@ -42,23 +42,29 @@ export const fetchContributions = async (inputData: { [key: string]: any }) => {
     inputDataFiltered["Failure_Type"]
   );
 
-  const response = await fetch(`${API_BASE}/analyze`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(inputDataFiltered),
-  });
+  const response = await fetch(
+    `${API_CONFIG.baseUrl}${API_CONFIG.endpoints.failureAnalysis}`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(inputDataFiltered),
+    }
+  );
   const data = await response.json();
   return data;
 };
 
 export const fetchCorrelations = async (data: any) => {
-  const response = await axios.post(`${API_BASE}/correlations`, {
-    features: data,
-  });
+  const response = await axios.post(
+    `${API_CONFIG.baseUrl}${API_CONFIG.endpoints.correlations}`,
+    { features: data }
+  );
   return response.data;
 };
 
 export const fetchCorrelationMatrix = async () => {
-  const response = await axios.get(`${API_BASE}/correlation_matrix`);
+  const response = await axios.get(
+    `${API_CONFIG.baseUrl}${API_CONFIG.endpoints.correlationMatrix}`
+  );
   return response.data;
 };

@@ -23,8 +23,9 @@ import {
 } from "@mui/material";
 
 import React from "react";
+import PrescriptiveLayout from "../layout";
 import FailureList from "@/components/prescriptive/FailureList";
-
+import { loadData, loadMetrics } from "../../../app/data/data";
 // Register the components
 ChartJS.register(
   CategoryScale,
@@ -159,57 +160,6 @@ interface NonTechnicalDashboardProps {
   performance: PerformanceMetrics;
   riskLevel: string;
 }
-const result = {
-  data: [
-    {
-      vibration_1: 0.432344408,
-      vibration_2: 0.351854516,
-      vibration_3: 0.648700604,
-      temperature: 76.95166305,
-      rpm_1: 723.8833036,
-      Target: 0,
-      Failure_Flag: 1,
-      Failure_Type_Name: "Trimmer Bearing Fault",
-    },
-    {
-      vibration_1: 0.432344408,
-      vibration_2: 0.351854516,
-      vibration_3: 0.648700604,
-      temperature: 76.95166305,
-      rpm_1: 723.8833036,
-      Target: 0,
-      Failure_Flag: 3,
-      Failure_Type_Name: "No Failure",
-    },
-    {
-      vibration_1: 0.432344408,
-      vibration_2: 0.351854516,
-      vibration_3: 0.648700604,
-      temperature: 76.95166305,
-      rpm_1: 723.8833036,
-      Target: 0,
-      Failure_Flag: 2,
-      Failure_Type_Name: "Drill Issue",
-    },
-    {
-      vibration_1: 0.432344408,
-      vibration_2: 0.351854516,
-      vibration_3: 0.648700604,
-      temperature: 76.95166305,
-      rpm_1: 723.8833036,
-      Target: 0,
-      Failure_Flag: 1,
-      Failure_Type_Name: "Trimmer Bearing Fault",
-    },
-  ],
-  performance: {
-    accuracy: 0.95,
-    precision: 0.93,
-    recall: 0.92,
-    f1_score: 0.92,
-  },
-};
-
 const NonTechnicalDashboard = ({
   data,
   performance,
@@ -354,61 +304,110 @@ export default function Dashboard() {
   const [activeTab, setActiveTab] = useState(0);
   const [riskLevel, setRiskLevel] = useState("Good");
 
+  // Update the useEffect to properly load data using the loadData and loadMetrics functions
   useEffect(() => {
     async function fetchData() {
-      setData(result.data);
-      setPerformance(result.performance);
+      try {
+        // Try to load data and metrics concurrently
+        const [newData, newMetrics] = await Promise.allSettled([
+          loadData(),
+          loadMetrics(),
+        ]);
 
-      const failureCounts: Record<number, number> = result.data.reduce(
-        (acc: Record<number, number>, row) => {
-          acc[row.Failure_Flag] = (acc[row.Failure_Flag] || 0) + 1;
-          return acc;
-        },
-        {}
-      );
+        // Handle data loading result
+        if (newData.status === "fulfilled") {
+          setData(newData.value);
+        } else {
+          console.error("Failed to load data:", newData.reason);
+          setData([]);
+        }
 
-      const highFailures = Object.keys(failureCounts).filter(
-        (flag) => Number(flag) > 3
-      ).length;
-      setRiskLevel(
-        highFailures > 2 ? "Critical" : highFailures > 0 ? "Moderate" : "Good"
-      );
+        // Handle metrics loading result
+        if (newMetrics.status === "fulfilled") {
+          setPerformance(newMetrics.value);
+        } else {
+          console.error("Failed to load metrics:", newMetrics.reason);
+          setPerformance({
+            accuracy: 0,
+            precision: 0,
+            recall: 0,
+            f1_score: 0,
+          });
+        }
+
+        // Calculate risk level from available data
+        if (newData.status === "fulfilled") {
+          const failureCounts: Record<number, number> = newData.value.reduce(
+            (acc: Record<number, number>, row) => {
+              acc[row.Failure_Flag] = (acc[row.Failure_Flag] || 0) + 1;
+              return acc;
+            },
+            {}
+          );
+
+          const highFailures = Object.keys(failureCounts).filter(
+            (flag) => Number(flag) > 3
+          ).length;
+
+          setRiskLevel(
+            highFailures > 2
+              ? "Critical"
+              : highFailures > 0
+              ? "Moderate"
+              : "Good"
+          );
+        }
+      } catch (error) {
+        console.error("Error loading dashboard data:", error);
+        // Initialize with empty data in case of error
+        setData([]);
+        setPerformance({
+          accuracy: 0,
+          precision: 0,
+          recall: 0,
+          f1_score: 0,
+        });
+        setRiskLevel("Good");
+      }
     }
+
     fetchData();
   }, []);
 
   return (
-    <Box sx={{ bgcolor: "#f5f5f5", minHeight: "100vh" }}>
-      <Container maxWidth="xl" sx={{ pt: 3, pb: 6 }}>
-        <Card sx={{ mb: 3 }}>
-          <CardContent>
-            <Tabs
-              value={activeTab}
-              onChange={(e, newValue) => setActiveTab(newValue)}
-              sx={{ borderBottom: 1, borderColor: "divider" }}
-            >
-              <Tab label="System Overview" />
-              <Tab label="Technical Analysis" />
-            </Tabs>
-          </CardContent>
-        </Card>
+    <PrescriptiveLayout>
+      <Box sx={{ bgcolor: "#f5f5f5", minHeight: "100vh" }}>
+        <Container maxWidth="xl" sx={{ pt: 3, pb: 6 }}>
+          <Card sx={{ mb: 3 }}>
+            <CardContent>
+              <Tabs
+                value={activeTab}
+                onChange={(e, newValue) => setActiveTab(newValue)}
+                sx={{ borderBottom: 1, borderColor: "divider" }}
+              >
+                <Tab label="System Overview" />
+                <Tab label="Detailed Analysis" />
+              </Tabs>
+            </CardContent>
+          </Card>
 
-        {activeTab === 0 ? (
-          <NonTechnicalDashboard
-            data={data}
-            performance={performance}
-            riskLevel={riskLevel}
-          />
-        ) : (
-          <TechnicalDashboard data={data} performance={performance} />
-        )}
+          {activeTab === 0 ? (
+            <NonTechnicalDashboard
+              data={data}
+              performance={performance}
+              riskLevel={riskLevel}
+            />
+          ) : (
+            <TechnicalDashboard data={data} performance={performance} />
+          )}
 
-        <Card sx={{ mt: 4 }}>
-          <CardContent>
-            <FailureList />
-          </CardContent>
-        </Card>
-      </Container>
-    </Box>
+          <Card sx={{ mt: 4 }}>
+            <CardContent>
+              <FailureList />
+            </CardContent>
+          </Card>
+        </Container>
+      </Box>
+    </PrescriptiveLayout>
   );
 }

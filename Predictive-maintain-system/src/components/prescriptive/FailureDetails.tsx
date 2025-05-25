@@ -14,6 +14,7 @@ import {
   Box,
   SelectChangeEvent,
 } from "@mui/material";
+import { API_CONFIG } from "@/pages/config/api";
 
 interface Detail {
   reason: string;
@@ -37,7 +38,9 @@ const FailureDetails: React.FC = () => {
   useEffect(() => {
     const fetchFailureData = async () => {
       try {
-        const response = await axios.get("http://127.0.0.1:5001/instructions/");
+        const response = await axios.get(
+          `${API_CONFIG.baseUrl}${API_CONFIG.endpoints.instructions}`
+        );
         setFailureData(response.data.instructions);
       } catch (error) {
         console.error("Error fetching failure data:", error);
@@ -98,36 +101,46 @@ const FailureDetails: React.FC = () => {
   return (
     <div className="p-8 w-full bg-gray-50 min-h-screen">
       <Card className="mb-8 p-6 shadow-lg bg-white">
-        <Typography variant="h4" className="font-bold text-gray-800 mb-6 border-b pb-4">
+        <Typography
+          variant="h4"
+          className="font-bold text-gray-800 mb-6 border-b pb-4"
+        >
           General Failure Diagnostics
         </Typography>
 
-      <FormControl fullWidth className="mb-6">
-        <InputLabel id="failure-select-label" className="font-medium">Select a Failure Type</InputLabel>
-        <Select
-          labelId="failure-select-label"
-          id="failure-select"
-          value={selectedFailure}
-          onChange={handleFailureChange}
-        >
-          {failureData.map((failureItem) => (
-            <MenuItem key={failureItem._id} value={failureItem.failure}>
-              {failureItem.failure}
-            </MenuItem>
-          ))}
-        </Select>
-      </FormControl>
-
+        <FormControl fullWidth className="mb-6">
+          <InputLabel id="failure-select-label" className="font-medium">
+            Select a Failure Type
+          </InputLabel>
+          <Select
+            labelId="failure-select-label"
+            id="failure-select"
+            value={selectedFailure}
+            onChange={handleFailureChange}
+          >
+            {failureData.map((failureItem) => (
+              <MenuItem key={failureItem._id} value={failureItem.failure}>
+                {failureItem.failure}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
       </Card>
 
       {allTags.length > 0 && (
         <Card className="mb-8 p-6 shadow-lg bg-white">
-          <Typography variant="h6" className="font-semibold text-gray-700 mb-4 border-b pb-3">
+          <Typography
+            variant="h6"
+            className="font-semibold text-gray-700 mb-4 border-b pb-3"
+          >
             Observations
           </Typography>
           {allTags.map((tag) => (
             <Box key={tag} className="mb-6 bg-gray-50 p-4 rounded-lg">
-              <Typography variant="body1" className="text-gray-800 mb-3 font-medium">
+              <Typography
+                variant="body1"
+                className="text-gray-800 mb-3 font-medium"
+              >
                 Is there any {tag} experiencing with the machine?
               </Typography>
               <FormControl component="fieldset">
@@ -179,35 +192,36 @@ const FailureDetails: React.FC = () => {
               Possible Reasons
             </Typography>
 
-          {filteredDetails.length > 0 ? (
-            filteredDetails.map((detail, index) => (
-              <Card
-                key={index}
-                className="mb-4 shadow-md cursor-pointer transition-all duration-300 hover:shadow-xl hover:scale-[1.02] border border-gray-100"
-                onClick={() => toggleSolutionVisibility(index)}
-              >
-                <CardContent className="hover:bg-gray-50">
-                  <Typography
-                    variant="body1"
-                    className="text-gray-800 font-medium"
-                  >
-                    <strong>Reason:</strong> {detail.reason}
-                  </Typography>
-                  {expandedIndex === index && (
-                    <Box className="mt-4 p-4 bg-blue-50 rounded-lg">
-                      <Typography variant="body2" className="text-gray-700">
-                        <strong className="text-blue-700">Solution:</strong> {detail.solution}
-                      </Typography>
-                    </Box>
-                  )}
-                </CardContent>
-              </Card>
-            ))
-          ) : (
-            <Typography variant="body1" className="text-gray-500">
-              No details match the selected tags.
-            </Typography>
-          )}
+            {filteredDetails.length > 0 ? (
+              filteredDetails.map((detail, index) => (
+                <Card
+                  key={index}
+                  className="mb-4 shadow-md cursor-pointer transition-all duration-300 hover:shadow-xl hover:scale-[1.02] border border-gray-100"
+                  onClick={() => toggleSolutionVisibility(index)}
+                >
+                  <CardContent className="hover:bg-gray-50">
+                    <Typography
+                      variant="body1"
+                      className="text-gray-800 font-medium"
+                    >
+                      <strong>Reason:</strong> {detail.reason}
+                    </Typography>
+                    {expandedIndex === index && (
+                      <Box className="mt-4 p-4 bg-blue-50 rounded-lg">
+                        <Typography variant="body2" className="text-gray-700">
+                          <strong className="text-blue-700">Solution:</strong>{" "}
+                          {detail.solution}
+                        </Typography>
+                      </Box>
+                    )}
+                  </CardContent>
+                </Card>
+              ))
+            ) : (
+              <Typography variant="body1" className="text-gray-500">
+                No details match the selected tags.
+              </Typography>
+            )}
           </Card>
         </>
       )}

@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
+import PrescriptiveLayout from "../layout";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -120,21 +121,12 @@ const CorrelationHeatmap = () => {
   };
 
   return (
-    <>
+    <PrescriptiveLayout>
       <div style={{ width: "700px", height: "500px", margin: "0 auto" }}>
         <h1 className="text-3xl font-bold mb-4">Correlation Analysis</h1>
         <Chart type="matrix" data={data} options={options} />
       </div>
-
-      {/* <PairwiseLineCharts
-        dataset={{
-          Variable1: [12, 15, 20, 25, 18, 17, 30, 35, 40, 45],
-          Variable2: [8, 10, 12, 15, 13, 14, 20, 22, 25, 28],
-          Variable3: [50, 45, 40, 35, 30, 25, 20, 15, 10, 5],
-          Variable4: [5, 10, 15, 20, 25, 30, 35, 40, 45, 50],
-        }}
-      /> */}
-    </>
+    </PrescriptiveLayout>
   );
 };
 

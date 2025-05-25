@@ -1,13 +1,23 @@
 "use client";
-
+import ContributionsChart from "@/components/prescriptive/ContributionsChart";
+import { FailureData } from "@/components/prescriptive/FailureList";
 import { useRouter, useSearchParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
-import { Box, Tab, Tabs, Paper, Typography, Alert, Container, CircularProgress, Button } from "@mui/material";
+import Diagnose from "../diagnose/index";
+import FailureDetails from "@/components/prescriptive/FailureDetails";
+import {
+  Box,
+  Tab,
+  Tabs,
+  Paper,
+  Typography,
+  Alert,
+  Container,
+  CircularProgress,
+  Button,
+} from "@mui/material";
 import Swal from "sweetalert2";
 import { fetchContributions } from "@/services/api";
-import ContributionsChart from "@/components/prescriptive/ContributionsChart";
-import Diagnose from "../diagnose";
-import FailureDetails from "@/components/prescriptive/FailureDetails";
 
 interface Contributions {
   [feature: string]: number[];
@@ -53,10 +63,14 @@ export default function AnalyzeFailurePage() {
 
   const [possibleCauses, setPossibleCauses] = useState<string[]>([]);
   const [solutions, setSolutions] = useState<string[]>([]);
-  const [contributionData, setContributionData] = useState<ContributionData | null>(null);
+  const [contributionData, setContributionData] =
+    useState<ContributionData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
-  const failureCausesData: Record<string, { causes: string[]; solutions: string[] }> = {};
+  const failureCausesData: Record<
+    string,
+    { causes: string[]; solutions: string[] }
+  > = {};
 
   useEffect(() => {
     const failureData = failureCausesData[failureDataPassed.Failure_Type_Name];
@@ -71,27 +85,29 @@ export default function AnalyzeFailurePage() {
 
   useEffect(() => {
     if (failureDataPassed) {
-      setLoading(true);
-      Swal.fire({
-        title: "Loading contributions...",
-        allowOutsideClick: false,
-        didOpen: () => {
-          Swal.showLoading();
-        },
-      });
+      // setLoading(true);
+      // Swal.fire({
+      //   title: "Loading contributions...",
+      //   allowOutsideClick: false,
+      //   didOpen: () => {
+      //     Swal.showLoading();
+      //   },
+      // });
 
       fetchContributions(failureDataPassed)
         .then((response) => {
+          if (!response || typeof response !== "object") {
+            throw new Error("Invalid response format");
+          }
           setContributionData(response);
-          Swal.close();
         })
         .catch((error) => {
           console.error("Error fetching contributions:", error);
-          // Swal.fire({
-          //   icon: "error",
-          //   title: "Oops...",
-          //   text: "Failed to fetch contributions data!",
-          // });
+          Swal.fire({
+            icon: "error",
+            title: "Oops...",
+            text: "Failed to fetch contributions data. Please try again later.",
+          });
         })
         .finally(() => {
           setLoading(false);
@@ -113,29 +129,38 @@ export default function AnalyzeFailurePage() {
         <>
           {contributionData && (
             <Box sx={{ textAlign: "center", mb: 4 }}>
-              <ContributionsChart contributions={contributionData?.contributions} />
+              <ContributionsChart
+                contributions={contributionData?.contributions}
+              />
             </Box>
           )}
 
-            <Paper elevation={3} sx={{ p: 4, mb: 4 }}>
+          <Paper elevation={3} sx={{ p: 4, mb: 4 }}>
             <Typography variant="h5" fontWeight="bold" gutterBottom>
               Failure Type: {failureDataPassed.Failure_Type_Name}
             </Typography>
-            <Typography variant="body1" color="textSecondary" gutterBottom></Typography>
-              Below is an analysis of the possible causes and solutions for the failure type: <strong>{failureDataPassed.Failure_Type_Name}</strong>.
-            </Paper>
-        </>)}
-      <Typography variant="h6" fontWeight="bold" gutterBottom>
-        Possible Causes:
-      </Typography>
-      <ul>
-        {possibleCauses.map((cause, index) => (
-          <li key={index}>
-            <Typography variant="body1">{cause}</Typography>
-          </li>
-        ))}
-      </ul>
-    <Box sx={{ width: "100%" }}>
+            <Typography
+              variant="body1"
+              color="textSecondary"
+              gutterBottom
+            ></Typography>
+            Below is an analysis of the possible causes and solutions for the
+            failure type: <strong>{failureDataPassed.Failure_Type_Name}</strong>
+            .
+            <Typography variant="h6" fontWeight="bold" gutterBottom>
+              Preventive Mesures:
+            </Typography>
+            <ul>
+              {possibleCauses.map((cause, index) => (
+                <li key={index}>
+                  <Typography variant="body1">{cause}</Typography>
+                </li>
+              ))}
+            </ul>
+          </Paper>
+        </>
+      )}
+      <Box sx={{ width: "100%" }}>
         <Tabs
           value={activeTab}
           onChange={(e, newValue) => setActiveTab(newValue)}
@@ -148,9 +173,7 @@ export default function AnalyzeFailurePage() {
           <Tab label="General Failure Analysis" />
         </Tabs>
 
-        <Box>
-          {activeTab === 0 ? <Diagnose /> : <FailureDetails />}
-        </Box>
+        <Box>{activeTab === 0 ? <Diagnose /> : <FailureDetails />}</Box>
       </Box>
     </Container>
   );

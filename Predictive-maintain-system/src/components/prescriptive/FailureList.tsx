@@ -70,7 +70,9 @@ export default function FailureList() {
 
   const handleAnalyze = (failureData: FailureData) => {
     router.push(
-      `/prescriptive/analyzemy?data=${encodeURIComponent(JSON.stringify(failureData))}`
+      `/prescriptive/analyze?data=${encodeURIComponent(
+        JSON.stringify(failureData)
+      )}`
     );
     localStorage.setItem("failureData", JSON.stringify(failureData));
   };
