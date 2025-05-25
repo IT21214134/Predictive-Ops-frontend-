@@ -30,7 +30,7 @@ interface ContributionData {
 export default function AnalyzeFailurePage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const data = searchParams.get("data");
+  const data = searchParams?.get("data");
   const [activeTab, setActiveTab] = useState(0);
 
   const failureDataPassed = React.useMemo(() => {

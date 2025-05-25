@@ -21,7 +21,15 @@ import {
   Card,
   CardContent,
   Skeleton,
+  LinearProgress,
+  alpha,
+  Tooltip,
 } from "@mui/material";
+import {
+  Analytics,
+  Dashboard as DashboardIcon,
+  InfoOutlined,
+} from "@mui/icons-material";
 
 import React from "react";
 import PrescriptiveLayout from "../layout";
@@ -83,57 +91,262 @@ const TechnicalDashboard = ({
     ],
   };
 
+  const METRIC_DESCRIPTIONS = {
+    accuracy: {
+      label: "Accuracy",
+      description: "Overall correctness of predictions",
+      tooltip: "Percentage of correct predictions out of all predictions made",
+    },
+    precision: {
+      label: "Precision",
+      description: "Reliability of failure predictions",
+      tooltip:
+        "Percentage of correct failure predictions out of all failure predictions",
+    },
+    recall: {
+      label: "Recall",
+      description: "Detection rate of actual failures",
+      tooltip: "Percentage of actual failures that were correctly predicted",
+    },
+    f1_score: {
+      label: "F1 Score",
+      description: "Overall model performance",
+      tooltip: "Balanced measure between precision and recall (0-100%)",
+    },
+  } as const;
+
+  // Custom chart options
+  const chartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    animation: {
+      duration: 800,
+      easing: "easeInOutQuart" as
+        | "linear"
+        | "easeInQuad"
+        | "easeOutQuad"
+        | "easeInOutQuad"
+        | "easeInCubic"
+        | "easeOutCubic"
+        | "easeInOutCubic"
+        | "easeInQuart"
+        | "easeOutQuart"
+        | "easeInOutQuart"
+        | "easeInQuint"
+        | "easeOutQuint"
+        | "easeInOutQuint"
+        | "easeInSine"
+        | "easeOutSine"
+        | "easeInOutSine"
+        | "easeInExpo"
+        | "easeOutExpo"
+        | "easeInOutExpo"
+        | "easeInCirc"
+        | "easeOutCirc"
+        | "easeInOutCirc"
+        | "easeInElastic"
+        | "easeOutElastic"
+        | "easeInOutElastic"
+        | "easeInBack"
+        | "easeOutBack"
+        | "easeInOutBack"
+        | "easeInBounce"
+        | "easeOutBounce"
+        | "easeInOutBounce"
+        | undefined,
+    },
+    plugins: {
+      legend: {
+        position: "top" as const,
+        labels: {
+          padding: 20,
+          font: {
+            size: 13,
+            weight: 500,
+          },
+          usePointStyle: true,
+          pointStyle: "circle",
+        },
+      },
+      tooltip: {
+        backgroundColor: alpha("#fff", 0.9),
+        titleColor: "#000",
+        bodyColor: "#666",
+        bodyFont: { size: 13 },
+        borderColor: "#e1e4e8",
+        borderWidth: 1,
+        padding: 12,
+        boxPadding: 6,
+        usePointStyle: true,
+      },
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        grid: {
+          color: alpha("#000", 0.05),
+          drawBorder: false,
+        },
+        ticks: {
+          padding: 10,
+        },
+      },
+      x: {
+        grid: {
+          display: false,
+        },
+        ticks: {
+          padding: 10,
+        },
+      },
+    },
+  };
+
   return (
     <Container maxWidth="xl">
       <Box sx={{ py: 4 }}>
-        <Typography variant="h4" sx={{ mb: 4, fontWeight: "bold" }}>
-          Technical Dashboard
+        <Typography
+          variant="h4"
+          sx={{ mb: 4, fontWeight: "bold", textAlign: "center" }}
+        >
+          Detailed Analysis
         </Typography>
         <Grid container spacing={4}>
           <Grid item xs={12} lg={8}>
-            <Card>
+            <Card
+              sx={{
+                height: "100%",
+                transition:
+                  "transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out",
+                "&:hover": {
+                  transform: "translateY(-2px)",
+                  boxShadow: (theme) =>
+                    `0 8px 24px ${alpha(theme.palette.primary.main, 0.15)}`,
+                },
+              }}
+            >
               <CardContent>
-                <Typography variant="h6" sx={{ mb: 3 }}>
-                  Failure Distribution Analysis
-                </Typography>
-                <Box sx={{ height: 400 }}>
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    mb: 3,
+                    gap: 1,
+                  }}
+                >
+                  <Typography variant="h6">
+                    Failure Distribution Analysis
+                  </Typography>
+                  <Tooltip title="Shows the distribution of different types of failures detected by the system">
+                    <InfoOutlined
+                      sx={{ color: "text.secondary", fontSize: 20 }}
+                    />
+                  </Tooltip>
+                </Box>
+                <Box
+                  sx={{
+                    height: 400,
+                    position: "relative",
+                    ".canvas-container": {
+                      transition: "opacity 0.3s ease-in-out",
+                    },
+                  }}
+                >
                   <Bar
-                    data={failureFlagData}
-                    options={{
-                      responsive: true,
-                      maintainAspectRatio: false,
-                      plugins: {
-                        legend: {
-                          position: "top",
+                    data={{
+                      ...failureFlagData,
+                      datasets: [
+                        {
+                          ...failureFlagData.datasets[0],
+                          borderRadius: 6,
+                          maxBarThickness: 50,
+                          backgroundColor: [
+                            alpha("#00695c", 0.8),
+                            alpha("#f9a825", 0.8),
+                            alpha("#5E35B1", 0.8),
+                          ],
+                          borderColor: ["#00695c", "#f9a825", "#5E35B1"],
                         },
-                      },
+                      ],
                     }}
+                    options={chartOptions}
                   />
                 </Box>
               </CardContent>
             </Card>
           </Grid>
           <Grid item xs={12} lg={4}>
-            <Card>
+            <Card
+              sx={{
+                height: "100%",
+                transition: "transform 0.2s ease-in-out",
+                "&:hover": {
+                  transform: "translateY(-2px)",
+                },
+              }}
+            >
               <CardContent>
-                <Typography variant="h6" sx={{ mb: 3 }}>
-                  Performance Metrics
-                </Typography>
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    mb: 3,
+                    gap: 1,
+                  }}
+                >
+                  <Typography variant="h6">Performance Metrics</Typography>
+                  <Tooltip title="Key performance indicators of the prediction model">
+                    <InfoOutlined
+                      sx={{ color: "text.secondary", fontSize: 20 }}
+                    />
+                  </Tooltip>
+                </Box>
                 <Grid container spacing={2}>
-                  {["accuracy", "precision", "recall", "f1_score"].map(
-                    (key) => (
-                      <Grid item xs={6} key={key}>
-                        <Card variant="outlined" sx={{ bgcolor: "#f5f5f5" }}>
+                  {Object.entries(METRIC_DESCRIPTIONS).map(([key, info]) => (
+                    <Grid item xs={6} key={key}>
+                      <Tooltip title={info.tooltip} arrow placement="top">
+                        <Card
+                          variant="outlined"
+                          sx={{
+                            bgcolor: alpha("#f5f5f5", 0.3),
+                            transition: "all 0.2s ease-in-out",
+                            "&:hover": {
+                              bgcolor: alpha("#f5f5f5", 0.5),
+                              transform: "translateY(-2px)",
+                            },
+                            border: "1px solid",
+                            borderColor: alpha("#000", 0.08),
+                          }}
+                        >
                           <CardContent>
-                            <Typography
-                              variant="subtitle2"
-                              color="textSecondary"
-                            >
-                              {key.toUpperCase()}
-                            </Typography>
+                            <Box sx={{ mb: 1 }}>
+                              <Typography
+                                variant="subtitle2"
+                                sx={{
+                                  color: alpha("#000", 0.7),
+                                  textTransform: "capitalize",
+                                  fontWeight: 500,
+                                }}
+                              >
+                                {info.label}
+                              </Typography>
+                              <Typography
+                                variant="caption"
+                                sx={{
+                                  color: alpha("#000", 0.5),
+                                  display: "block",
+                                  mt: 0.5,
+                                }}
+                              >
+                                {info.description}
+                              </Typography>
+                            </Box>
                             <Typography
                               variant="h4"
-                              sx={{ mt: 1, color: "#1976d2" }}
+                              sx={{
+                                color: alpha("#1976d2", 0.85),
+                                fontWeight: 600,
+                              }}
                             >
                               {(
                                 performance[key as keyof PerformanceMetrics] *
@@ -143,9 +356,9 @@ const TechnicalDashboard = ({
                             </Typography>
                           </CardContent>
                         </Card>
-                      </Grid>
-                    )
-                  )}
+                      </Tooltip>
+                    </Grid>
+                  ))}
                 </Grid>
               </CardContent>
             </Card>
@@ -193,13 +406,33 @@ const NonTechnicalDashboard = ({
   const getStatusColor = (status: string) => {
     switch (status) {
       case "Good":
-        return { bg: "#E8F5E9", text: "#2E7D32" };
+        return {
+          bg: "#E8F5E9",
+          text: "#2E7D32",
+          icon: "✓",
+          shadow: "0 2px 8px rgba(46, 125, 50, 0.15)",
+        };
       case "Moderate":
-        return { bg: "#FFF3E0", text: "#F57C00" };
+        return {
+          bg: "#FFF3E0",
+          text: "#F57C00",
+          icon: "⚠️",
+          shadow: "0 2px 8px rgba(245, 124, 0, 0.15)",
+        };
       case "Critical":
-        return { bg: "#FFEBEE", text: "#C62828" };
+        return {
+          bg: "#EDE7F6",
+          text: "#5E35B1",
+          icon: "⚡",
+          shadow: "0 2px 8px rgba(94, 53, 177, 0.15)",
+        };
       default:
-        return { bg: "#E8F5E9", text: "#2E7D32" };
+        return {
+          bg: "#E8F5E9",
+          text: "#2E7D32",
+          icon: "✓",
+          shadow: "0 2px 8px rgba(46, 125, 50, 0.15)",
+        };
     }
   };
 
@@ -218,10 +451,100 @@ const NonTechnicalDashboard = ({
     return value;
   };
 
+  // Define chartOptions for NonTechnicalDashboard
+  const chartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    animation: {
+      duration: 800,
+      easing: "easeInOutQuart" as
+        | "linear"
+        | "easeInQuad"
+        | "easeOutQuad"
+        | "easeInOutQuad"
+        | "easeInCubic"
+        | "easeOutCubic"
+        | "easeInOutCubic"
+        | "easeInQuart"
+        | "easeOutQuart"
+        | "easeInOutQuart"
+        | "easeInQuint"
+        | "easeOutQuint"
+        | "easeInOutQuint"
+        | "easeInSine"
+        | "easeOutSine"
+        | "easeInOutSine"
+        | "easeInExpo"
+        | "easeOutExpo"
+        | "easeInOutExpo"
+        | "easeInCirc"
+        | "easeOutCirc"
+        | "easeInOutCirc"
+        | "easeInElastic"
+        | "easeOutElastic"
+        | "easeInOutElastic"
+        | "easeInBack"
+        | "easeOutBack"
+        | "easeInOutBack"
+        | "easeInBounce"
+        | "easeOutBounce"
+        | "easeInOutBounce"
+        | undefined,
+    },
+    plugins: {
+      legend: {
+        position: "top" as const,
+        labels: {
+          padding: 20,
+          font: {
+            size: 13,
+            weight: 500,
+          },
+          usePointStyle: true,
+          pointStyle: "circle",
+        },
+      },
+      tooltip: {
+        backgroundColor: alpha("#fff", 0.9),
+        titleColor: "#000",
+        bodyColor: "#666",
+        bodyFont: { size: 13 },
+        borderColor: "#e1e4e8",
+        borderWidth: 1,
+        padding: 12,
+        boxPadding: 6,
+        usePointStyle: true,
+      },
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        grid: {
+          color: alpha("#000", 0.05),
+          drawBorder: false,
+        },
+        ticks: {
+          padding: 10,
+        },
+      },
+      x: {
+        grid: {
+          display: false,
+        },
+        ticks: {
+          padding: 10,
+        },
+      },
+    },
+  };
+
   return (
     <Container maxWidth="xl">
-      <Box sx={{ py: 4 }}>
-        <Typography variant="h4" sx={{ mb: 4, fontWeight: "bold" }}>
+      <Box sx={{ pb: 4 }}>
+        <Typography
+          variant="h4"
+          sx={{ mb: 4, fontWeight: "bold", textAlign: "center" }}
+        >
           System Overview
         </Typography>
         <Grid container spacing={4}>
@@ -273,14 +596,7 @@ const NonTechnicalDashboard = ({
                 </Typography>
                 <Typography variant="h2" sx={{ color: "#f57c00", mb: 2 }}>
                   {renderMetricValue(
-                    `${(
-                      (Object.values(failureFlagDistribution).reduce<number>(
-                        (a: number) => a,
-                        1
-                      ) /
-                        data.length) *
-                        100 || 0
-                    ).toFixed(1)}%`
+                    `${(100 - (performance.accuracy * 100 || 0)).toFixed(1)}%`
                   )}
                 </Typography>
                 <Typography variant="body2" color="textSecondary">
@@ -291,23 +607,59 @@ const NonTechnicalDashboard = ({
           </Grid>
 
           <Grid item xs={12}>
-            <Card>
+            <Card
+              sx={{
+                height: "100%",
+                transition: "transform 0.2s ease-in-out",
+                "&:hover": {
+                  transform: "translateY(-2px)",
+                },
+              }}
+            >
               <CardContent>
-                <Typography variant="h6" sx={{ mb: 3 }}>
-                  Failure Type Analysis
-                </Typography>
-                <Box sx={{ height: 400 }}>
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    mb: 3,
+                    gap: 1,
+                  }}
+                >
+                  <Typography variant="h6">Failure Type Analysis</Typography>
+                  <Tooltip title="Distribution of different failure types across the system">
+                    <InfoOutlined
+                      sx={{ color: "text.secondary", fontSize: 20 }}
+                    />
+                  </Tooltip>
+                </Box>
+                <Box
+                  sx={{
+                    height: 400,
+                    position: "relative",
+                    ".canvas-container": {
+                      transition: "opacity 0.3s ease-in-out",
+                    },
+                  }}
+                >
                   <Bar
-                    data={failureFlagData}
-                    options={{
-                      responsive: true,
-                      maintainAspectRatio: false,
-                      plugins: {
-                        legend: {
-                          position: "top",
+                    data={{
+                      ...failureFlagData,
+                      datasets: [
+                        {
+                          ...failureFlagData.datasets[0],
+                          borderRadius: 6,
+                          maxBarThickness: 50,
+                          backgroundColor: [
+                            alpha("#00695c", 0.8),
+                            alpha("#f9a825", 0.8),
+                            alpha("#5E35B1", 0.8),
+                          ],
+                          borderColor: ["#00695c", "#f9a825", "#5E35B1"],
+                          borderWidth: 2,
                         },
-                      },
+                      ],
                     }}
+                    options={chartOptions}
                   />
                 </Box>
               </CardContent>
@@ -408,32 +760,98 @@ export default function Dashboard() {
     <PrescriptiveLayout>
       <Box sx={{ bgcolor: "#f5f5f5", minHeight: "100vh" }}>
         <Container maxWidth="xl" sx={{ pt: 3, pb: 6 }}>
-          <Card sx={{ mb: 3 }}>
-            <CardContent>
+          {/* Enhanced Tab Navigation */}
+          <Card
+            sx={{
+              mb: 3,
+              boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+              borderRadius: 2,
+            }}
+          >
+            <CardContent sx={{ p: 0 }}>
+              {isLoading && (
+                <LinearProgress
+                  sx={{
+                    position: "absolute",
+                    width: "100%",
+                    top: 0,
+                    borderTopLeftRadius: 8,
+                    borderTopRightRadius: 8,
+                  }}
+                />
+              )}
               <Tabs
                 value={activeTab}
                 onChange={(e, newValue) => setActiveTab(newValue)}
-                sx={{ borderBottom: 1, borderColor: "divider" }}
+                sx={{
+                  borderBottom: 1,
+                  borderColor: "divider",
+                  "& .MuiTab-root": {
+                    minHeight: 64,
+                    fontSize: "1rem",
+                    textTransform: "none",
+                    fontWeight: 500,
+                  },
+                }}
+                variant="fullWidth"
               >
-                <Tab label="System Overview" />
-                <Tab label="Detailed Analysis" />
+                <Tab
+                  label="System Overview"
+                  icon={<DashboardIcon />}
+                  iconPosition="start"
+                  sx={{
+                    display: "flex",
+                    flexDirection: "row",
+                    alignItems: "center",
+                    gap: 1,
+                  }}
+                />
+                <Tab
+                  label="Detailed Analysis"
+                  icon={<Analytics />}
+                  iconPosition="start"
+                  sx={{
+                    display: "flex",
+                    flexDirection: "row",
+                    alignItems: "center",
+                    gap: 1,
+                  }}
+                />
               </Tabs>
             </CardContent>
           </Card>
 
-          {activeTab === 0 ? (
-            <NonTechnicalDashboard
-              data={data}
-              performance={performance}
-              riskLevel={riskLevel}
-              isLoading={isLoading}
-            />
-          ) : (
-            <TechnicalDashboard data={data} performance={performance} />
-          )}
+          {/* Animated Tab Panels */}
+          <Box
+            sx={{
+              transition: "opacity 0.3s ease-in-out",
+              opacity: isLoading ? 0.6 : 1,
+            }}
+          >
+            {activeTab === 0 ? (
+              <NonTechnicalDashboard
+                data={data}
+                performance={performance}
+                riskLevel={riskLevel}
+                isLoading={isLoading}
+              />
+            ) : (
+              <TechnicalDashboard data={data} performance={performance} />
+            )}
+          </Box>
 
-          <Card sx={{ mt: 4 }}>
+          {/* Failure List Section */}
+          <Card
+            sx={{
+              mt: 4,
+              boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+              borderRadius: 2,
+            }}
+          >
             <CardContent>
+              <Typography variant="h6" sx={{ mb: 3 }}>
+                Recent Failures
+              </Typography>
               <FailureList />
             </CardContent>
           </Card>

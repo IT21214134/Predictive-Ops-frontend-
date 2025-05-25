@@ -59,6 +59,11 @@
   dependencies:
     regenerator-runtime "^0.14.0"
 
+"@babel/runtime@^7.27.1":
+  version "7.27.1"
+  resolved "https://registry.yarnpkg.com/@babel/runtime/-/runtime-7.27.1.tgz#9fce313d12c9a77507f264de74626e87fd0dc541"
+  integrity sha512-1x3D2xEk2fRo3PAhwQwu5UubzgiVWSXTBfWpVd2Mx2AzRqJuDJCsgaDVZ7HB5iGzDW1Hl1sWN2mFyKjmR9uAog==
+
 "@babel/template@^7.25.9":
   version "7.25.9"
   resolved "https://registry.npmjs.org/@babel/template/-/template-7.25.9.tgz"
@@ -703,6 +708,13 @@
   version "6.1.6"
   resolved "https://registry.npmjs.org/@mui/core-downloads-tracker/-/core-downloads-tracker-6.1.6.tgz"
   integrity sha512-nz1SlR9TdBYYPz4qKoNasMPRiGb4PaIHFkzLzhju0YVYS5QSuFF2+n7CsiHMIDcHv3piPu/xDWI53ruhOqvZwQ==
+
+"@mui/icons-material@^7.1.0":
+  version "7.1.0"
+  resolved "https://registry.yarnpkg.com/@mui/icons-material/-/icons-material-7.1.0.tgz#c20860d4f2f09160697a3dd353234a802c45b1e9"
+  integrity sha512-1mUPMAZ+Qk3jfgL5ftRR06ATH/Esi0izHl1z56H+df6cwIlCWG66RXciUqeJCttbOXOQ5y2DCjLZI/4t3Yg3LA==
+  dependencies:
+    "@babel/runtime" "^7.27.1"
 
 "@mui/material@^6.1.6":
   version "6.1.6"
@@ -1505,7 +1517,7 @@ emoji-regex@^9.2.2:
     chartjs-chart-matrix "^2.0.1"
     csv-parse "^5.6.0"
     daisyui "^4.12.10"
-    emotion-detection "file:../../../../AppData/Local/Yarn/Cache/v6/npm-emotion-detection-0.1.0-b5440d17-b6da-45af-83b4-87f7a476b2da-1748119030817/node_modules/emotion-detection"
+    emotion-detection "file:../../../../AppData/Local/Yarn/Cache/v6/npm-emotion-detection-0.1.0-83773608-e236-46ae-b3c2-3486a3befbe9-1748149064609/node_modules/emotion-detection"
     firebase "^10.12.4"
     framer-motion "^12.4.2"
     lucide-react "^0.474.0"

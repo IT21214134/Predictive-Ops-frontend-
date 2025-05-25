@@ -3,6 +3,49 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Papa from "papaparse";
+import {
+  Box,
+  Typography,
+  TextField,
+  Button,
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  IconButton,
+  Chip,
+  Tooltip,
+  Alert,
+  Stack,
+} from "@mui/material";
+import {
+  RestartAlt as ResetIcon,
+  Analytics as AnalyticsIcon,
+} from "@mui/icons-material";
+
+const CHIP_STYLES = {
+  minWidth: 160, // Set a fixed minimum width for all chips
+  justifyContent: "center",
+  "& .MuiChip-label": {
+    display: "block",
+    whiteSpace: "nowrap",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+  },
+} as const;
+
+const TABLE_HEADER_STYLES = {
+  fontWeight: 600,
+  color: "#1976d2",
+  fontSize: "0.875rem",
+  backgroundColor: "rgba(25, 118, 210, 0.04)",
+  borderBottom: "2px solid rgba(25, 118, 210, 0.1)",
+  padding: "12px 16px",
+  whiteSpace: "nowrap",
+} as const;
 
 export type FailureData = {
   connectionDeviceId: number;
@@ -90,110 +133,222 @@ export default function FailureList() {
     // Limit the filtered data to 20 records
     .slice(0, 20);
 
+  const getFailureTypeStyle = (failureType: string) => {
+    switch (failureType) {
+      case "Trimmer Bearing Fault":
+        return {
+          color: "#f57c00", // Darker orange for better contrast
+          backgroundColor: "rgba(255, 243, 224, 0.4)",
+          textShadow: "0 1px 2px rgba(0, 0, 0, 0.1)", // Subtle dark glow
+        };
+      case "Drill Issue":
+        return {
+          color: "#d32f2f", // Darker red for better contrast
+          backgroundColor: "rgba(255, 235, 238, 0.4)",
+          textShadow: "0 1px 2px rgba(0, 0, 0, 0.1)", // Subtle dark glow
+        };
+      default:
+        return {
+          color: "#424242", // Darker grey for better contrast
+          backgroundColor: "rgba(245, 245, 245, 0.4)",
+          textShadow: "0 1px 2px rgba(0, 0, 0, 0.1)", // Subtle dark glow
+        };
+    }
+  };
+
   return (
-    <div>
-      <h1 className="text-2xl font-bold mb-8">Predicted Failure List</h1>
-      <div className="flex flex-row justify-between">
-        <div className="mb-4 flex gap-4 items-center align-middle">
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Start Date & Time (UTC)
-            </label>
-            <input
+    <Paper elevation={0} sx={{ p: 3, borderRadius: 2 }}>
+      <Typography variant="h5" sx={{ mb: 4, fontWeight: 600 }}>
+        Predicted Failure List
+      </Typography>
+
+      <Stack direction="row" spacing={2} sx={{ mb: 4 }}>
+        <Box flex={1}>
+          <Stack direction="row" spacing={2} alignItems="center">
+            <TextField
+              label="Start Date & Time (UTC)"
               type="datetime-local"
-              className="border border-gray-300 rounded p-2"
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
+              InputLabelProps={{ shrink: true }}
+              size="small"
+              sx={{ flex: 1 }}
             />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              End Date & Time (UTC)
-            </label>
-            <input
+            <TextField
+              label="End Date & Time (UTC)"
               type="datetime-local"
-              className="border border-gray-300 rounded p-2"
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
+              InputLabelProps={{ shrink: true }}
+              size="small"
+              sx={{ flex: 1 }}
             />
-          </div>
-        </div>
-        <div>
-          <button
-            className="mt-5 bg-gray-600 text-white px-4 py-2 rounded"
+          </Stack>
+        </Box>
+        <Tooltip title="Reset Filters">
+          <IconButton
             onClick={() => {
               setStartDate("");
               setEndDate("");
             }}
+            color="primary"
           >
-            Reset
-          </button>
-        </div>
-      </div>
+            <ResetIcon />
+          </IconButton>
+        </Tooltip>
+      </Stack>
 
-      {/* Table */}
-      <table className="table-auto w-full border-collapse border border-gray-300 text-left">
-        <thead className="bg-gray-200">
-          <tr>
-            {/* <th className="border border-gray-300 p-2">Device ID</th> */}
-            <th className="border border-gray-300 p-2">Vibration 1</th>
-            <th className="border border-gray-300 p-2">Vibration 2</th>
-            <th className="border border-gray-300 p-2">Vibration 3</th>
-            <th className="border border-gray-300 p-2">Temperature</th>
-            <th className="border border-gray-300 p-2">RPM 1</th>
-            <th className="border border-gray-300 p-2">Failure Type</th>
-            <th className="border border-gray-300 p-2">Timestamp</th>
-            <th className="border border-gray-300 p-2">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {filteredData.map((row) => (
-            <tr
-              key={row.connectionDeviceId}
-              className="odd:bg-white even:bg-gray-100"
-            >
-              {/* <td className="border border-gray-300 p-2">
-                {row.connectionDeviceId}
-              </td> */}
-              <td className="border border-gray-300 p-2">
-                {row.vibration_01.toFixed(2)}
-              </td>
-              <td className="border border-gray-300 p-2">
-                {row.vibration_02.toFixed(2)}
-              </td>
-              <td className="border border-gray-300 p-2">
-                {row.vibration_03.toFixed(2)}
-              </td>
-              <td className="border border-gray-300 p-2">
-                {row.temperature.toFixed(2)}
-              </td>
-              <td className="border border-gray-300 p-2">
-                {row.rpm_1.toFixed(2)}
-              </td>
-              <td className="border border-gray-300 p-2">
-                {row.Failure_Type_Name}
-              </td>
-              <td className="border border-gray-300 p-2">
-                {new Date(row.timestamp).toLocaleString()}
-              </td>
-              <td className="border border-gray-300 p-2 text-center">
-                <button
-                  className="bg-blue-500 text-white px-3 py-1 rounded mx-2 my-2"
-                  onClick={() => handleAnalyze(row)}
+      <TableContainer component={Paper} elevation={0} variant="outlined">
+        <Table size="small">
+          <TableHead>
+            <TableRow>
+              {[
+                {
+                  id: "timestamp",
+                  label: "Timestamp",
+                },
+                {
+                  id: "vibration1",
+                  label: "Vibration 1",
+                },
+                {
+                  id: "vibration2",
+                  label: "Vibration 2",
+                },
+                {
+                  id: "vibration3",
+                  label: "Vibration 3",
+                },
+                {
+                  id: "temperature",
+                  label: "Temperature",
+                },
+                {
+                  id: "rpm",
+                  label: "RPM",
+                },
+                {
+                  id: "failureType",
+                  label: "Failure Type",
+                },
+                {
+                  id: "actions",
+                  label: "Actions",
+                  align: "center",
+                },
+              ].map((column) => (
+                <TableCell
+                  key={column.id}
+                  align={
+                    (column.align as
+                      | "inherit"
+                      | "left"
+                      | "center"
+                      | "right"
+                      | "justify") || "left"
+                  }
+                  sx={{
+                    ...TABLE_HEADER_STYLES,
+                    "&:hover": {
+                      backgroundColor: "rgba(25, 118, 210, 0.08)",
+                    },
+                    transition: "background-color 0.2s ease",
+                    position: "relative",
+                    "&::after": {
+                      content: '""',
+                      position: "absolute",
+                      bottom: 0,
+                      left: 0,
+                      width: "100%",
+                      height: "2px",
+                      backgroundColor: "rgba(25, 118, 210, 0.1)",
+                      transform: "scaleX(0)",
+                      transition: "transform 0.2s ease",
+                    },
+                    "&:hover::after": {
+                      transform: "scaleX(1)",
+                    },
+                  }}
                 >
-                  Analyze Failure
-                </button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+                    {column.label}
+                  </Box>
+                </TableCell>
+              ))}
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {filteredData.map((row) => (
+              <TableRow
+                key={row.connectionDeviceId}
+                sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
+              >
+                <TableCell>
+                  {new Date(row.timestamp).toLocaleString()}
+                </TableCell>
+                <TableCell>{row.vibration_01.toFixed(2)}</TableCell>
+                <TableCell>{row.vibration_02.toFixed(2)}</TableCell>
+                <TableCell>{row.vibration_03.toFixed(2)}</TableCell>
+                <TableCell>{row.temperature.toFixed(2)}</TableCell>
+                <TableCell>{row.rpm_1.toFixed(2)}</TableCell>
+                <TableCell>
+                  <Box sx={{ display: "flex", justifyContent: "flex-start" }}>
+                    <Chip
+                      label={row.Failure_Type_Name}
+                      size="small"
+                      sx={{
+                        ...CHIP_STYLES,
+                        backgroundColor: getFailureTypeStyle(
+                          row.Failure_Type_Name
+                        ).backgroundColor,
+                        color: getFailureTypeStyle(row.Failure_Type_Name).color,
+                        fontWeight: 500,
+                        textShadow: getFailureTypeStyle(row.Failure_Type_Name)
+                          .textShadow,
+                        border: "1px solid",
+                        borderColor: "rgba(0, 0, 0, 0.1)",
+                        "& .MuiChip-label": {
+                          ...CHIP_STYLES["& .MuiChip-label"],
+                          textShadow: getFailureTypeStyle(row.Failure_Type_Name)
+                            .textShadow,
+                        },
+                        "&:hover": {
+                          backgroundColor: getFailureTypeStyle(
+                            row.Failure_Type_Name
+                          ).backgroundColor,
+                          opacity: 0.8,
+                        },
+                      }}
+                    />
+                  </Box>
+                </TableCell>
+                <TableCell align="center">
+                  <Tooltip title="Analyze Failure">
+                    <Button
+                      startIcon={<AnalyticsIcon />}
+                      variant="contained"
+                      size="small"
+                      onClick={() => handleAnalyze(row)}
+                      sx={{
+                        textTransform: "none",
+                        boxShadow: "none",
+                      }}
+                    >
+                      Analyze
+                    </Button>
+                  </Tooltip>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
 
       {filteredData.length === 0 && (
-        <p className="text-center text-gray-500 mt-4">
+        <Alert severity="info" sx={{ mt: 2 }}>
           No data found for the selected range.
-        </p>
+        </Alert>
       )}
-    </div>
+    </Paper>
   );
 }
