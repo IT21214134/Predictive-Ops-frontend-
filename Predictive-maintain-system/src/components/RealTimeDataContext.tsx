@@ -1,3 +1,4 @@
+import { BACKEND_PORT } from "@/config/consts";
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { io, Socket } from "socket.io-client";
 
@@ -23,7 +24,7 @@ export const RealTimeDataProvider: React.FC<{ children: React.ReactNode }> = ({
   const [realTimeData, setRealTimeData] = useState<RealTimeData>(null);
 
   useEffect(() => {
-    const socket: Socket = io("http://localhost:8000");
+    const socket: Socket = io(BACKEND_PORT);
 
     socket.on("predict_data", (data) => {
       setRealTimeData(data);

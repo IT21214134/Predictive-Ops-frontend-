@@ -9,6 +9,7 @@ import { useRealTimeData } from "../components/RealTimeDataContext";
 
 import React, { useState } from "react";
 import { loadBindings } from "next/dist/build/swc";
+import Link from "next/link";
 
 export default function Login() {
   const router = useRouter();
@@ -136,13 +137,13 @@ export default function Login() {
             <div className="mt-4 md:mt-6">
               <span className="text-sm md:text-lg font-semibold">
                 Don't have an account?{" "}
-                <a
-                  href="/signup/"
+                <Link
+                  href="/signup"
                   className="font-bold ml-1 hover:text-primary-content"
                   style={{ color: "#0A5DFF" }}
                 >
                   Sign Up
-                </a>
+                </Link>
               </span>
             </div>
           </div>

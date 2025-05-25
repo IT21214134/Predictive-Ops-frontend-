@@ -1,1 +1,1 @@
-export const BACKEND_PORT = "http://localhost:8000";
+export const BACKEND_PORT = "http://ec2-51-21-194-188.eu-north-1.compute.amazonaws.com:8000";
