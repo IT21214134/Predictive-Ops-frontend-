@@ -345,6 +345,29 @@ const AnomalyViewer: React.FC = () => {
       const anomalyCounts = anomalies.map((a) => a.anomalies?.length ?? 0);
       const nullCounts = anomalies.map((a) => a.nulls?.length ?? 0);
 
+
+      // Sensor-level analysis
+      const sensorAnomalyCount: Record<string, number> = {};
+      const sensorNullCount: Record<string, number> = {};
+
+      anomalies.forEach((entry) => {
+        (entry.anomalies ?? []).forEach((sensor: string) => {
+          sensorAnomalyCount[sensor] = (sensorAnomalyCount[sensor] || 0) + 1;
+        });
+        (entry.nulls ?? []).forEach((sensor: string) => {
+          sensorNullCount[sensor] = (sensorNullCount[sensor] || 0) + 1;
+        });
+      });
+
+      const sortedAnomalousSensors = Object.entries(sensorAnomalyCount)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 5); // Top 5
+
+      const sortedNullSensors = Object.entries(sensorNullCount)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 5);
+
+
       /* -------------------- build off‑screen Chart.js canvas --------------- */
       const canvas = document.createElement("canvas");
       canvas.width = 1600;
@@ -410,9 +433,10 @@ const AnomalyViewer: React.FC = () => {
       const idxMax = anomalyCounts.indexOf(maxAnom);
       const worstTs = maxAnom !== 0 && labels[idxMax] ? labels[idxMax] : "-";
       const anomalyPct = ((totalAnomalies / (totalAnomalies + totalNulls)) * 100 || 0).toFixed(1);
+      const nullPct = ((totalNulls / (totalAnomalies + totalNulls)) * 100 || 0).toFixed(1);
 
       /* -------------------------- assemble PDF ---------------------------- */
-      const doc = new jsPDF({ orientation: "landscape", unit: "pt", format: "a4" });
+      const doc = new jsPDF({ orientation: "portrait", unit: "pt", format: "a4" });
       const pw = doc.internal.pageSize.getWidth();
 
       // Header
@@ -432,6 +456,7 @@ const AnomalyViewer: React.FC = () => {
         [`Total records`, anomalies.length.toString()],
         [`Total null flags`, totalNulls.toString()],
         [`Total anomalies`, totalAnomalies.toString()],
+        [`Null flags %`, `${nullPct}%`],
         [`Anomaly %`, `${anomalyPct}%`],
         [`Worst timestamp`, worstTs],
       ];
@@ -454,6 +479,10 @@ const AnomalyViewer: React.FC = () => {
       // const chartW = pw - 340; // leave space for summary block
       // const chartH = (canvas.height * chartW) / canvas.width;
 
+
+      /* —— Page 2: chart + detail table —— */
+      //doc.addPage();
+
       // Chart image - centered
       const chartTop = (doc as any).lastAutoTable ? ((doc as any).lastAutoTable.finalY || 0) + 30 : 220;
       const maxChartW = pw - 80; // Leave 40pt margin on each side
@@ -474,6 +503,36 @@ const AnomalyViewer: React.FC = () => {
         doc.text("Chart could not be generated", 320, chartTop + 50);
       }
 
+
+      if(sortedAnomalousSensors.length > 0) {
+        // Anomalous Sensors Table
+        autoTable(doc, {
+          startY: chartTop + chartH + 30,
+          //startY: (doc as any).lastAutoTable.finalY + 20,
+          head: [["Top Anomalous Sensors", "Count"]],
+          body: sortedAnomalousSensors.map(([sensor, count]) => [sensor, count.toString()]),
+          theme: "striped",
+          styles: { fontSize: 10 },
+          margin: { left: 40, right: 40 },
+        });
+      }
+      
+      if (sortedNullSensors.length > 0) {
+        // Null-prone Sensors Table
+        autoTable(doc, {
+          startY: sortedAnomalousSensors.length > 0 ? (doc as any).lastAutoTable.finalY + 10 : chartTop + chartH + 30,
+          //startY: (doc as any).lastAutoTable.finalY + 10,
+          head: [["Top Null-Flagged Sensors", "Count"]],
+          body: sortedNullSensors.map(([sensor, count]) => [sensor, count.toString()]),
+          theme: "striped",
+          styles: { fontSize: 10 },
+          margin: { left: 40, right: 40 },
+        });
+      }
+
+
+
+
       // Detailed table
       const tableBody = anomalies.map((a) => [
         format(new Date(a.timestamp), "yyyy-MM-dd HH:mm:ss"),
@@ -482,7 +541,8 @@ const AnomalyViewer: React.FC = () => {
       ]);
       
       autoTable(doc, {
-        startY: chartTop + chartH + 30,
+        startY: (doc as any).lastAutoTable.finalY + 10,
+        //startY: chartTop + chartH + 30,
         head: [["Timestamp", "# Anomalies", "# Null Flags"]],
         body: tableBody,
         styles: { fontSize: 9 },
