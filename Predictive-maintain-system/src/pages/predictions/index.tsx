@@ -159,7 +159,7 @@ function SchedulePage() {
               className="bg-white shadow-md rounded-lg p-4 flex flex-col items-center justify-center"
             >
               <span className="text-lg font-medium">{sensor.label}</span>
-              <span className="text-gray-800 mt-2">{sensor.value}</span>
+              <span className="text-gray-800 mt-2">{sensor.value} {sensor.label?.startsWith("Vibration") ? "(magnitude)" : sensor.label === "Temperature" ? "(°C)" : "" }</span>
               <span className="text-red-500 mt-2">⛔</span>
             </div>
           ))}
