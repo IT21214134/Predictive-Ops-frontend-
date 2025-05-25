@@ -183,7 +183,7 @@ export default function Diagnose() {
                 ).map((field) => (
                   <TextField
                     key={field.name}
-                    label={`${field.label} Reading`}
+                    label={`${field.label} (magnitude)`}
                     name={field.name}
                     type="number"
                     value={parseFloat(formData[field.name]).toFixed(2)}
