@@ -1,5 +1,27 @@
 "use client";
 import { useEffect, useState } from "react";
+import {
+  Box,
+  Container,
+  Paper,
+  Typography,
+  TextField,
+  RadioGroup,
+  FormControlLabel,
+  Radio,
+  Button,
+  Alert,
+  CircularProgress,
+  Fade,
+  Divider,
+  alpha,
+} from "@mui/material";
+import {
+  Settings as SettingsIcon,
+  Warning as WarningIcon,
+  CheckCircle as CheckCircleIcon,
+} from "@mui/icons-material";
+import { API_CONFIG } from "@/config/api";
 
 type RecommendationItem = {
   reason: string;
@@ -48,7 +70,7 @@ export default function Diagnose() {
 
     try {
       const response = await axios.post(
-        "http://localhost:5001/diagnostics/diagnose",
+        `${API_CONFIG.baseUrl}${API_CONFIG.endpoints.diagnose}`,
         formData
       );
       setResult(response.data.criticality);
@@ -81,238 +103,310 @@ export default function Diagnose() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-gray-100 p-8">
-      <div className="w-full">
-        <h1 className="text-4xl font-bold mb-8 text-blue-800 text-center">
-          Machine Health Dashboard
-        </h1>
-        <div className="grid md:grid-cols-2 gap-8">
-          <form
-            className="bg-white p-8 rounded-2xl shadow-lg hover:shadow-xl transition-shadow duration-300"
-            onSubmit={handleSubmit}
+    <Container maxWidth="xl">
+      <Box sx={{ py: 4 }}>
+        <Typography
+          variant="h4"
+          sx={{
+            mb: 4,
+            fontWeight: 700,
+            color: "text.primary",
+            textAlign: "center",
+          }}
+        >
+          Machine Diagnostic Dashboard
+        </Typography>
+
+        <Box
+          sx={{
+            display: "grid",
+            gridTemplateColumns: { md: "1fr 1fr" },
+            gap: 4,
+          }}
+        >
+          {/* Input Form Section */}
+          <Paper
+            elevation={0}
+            sx={{
+              p: 4,
+              borderRadius: 2,
+              border: "1px solid",
+              borderColor: "divider",
+              transition: "all 0.2s ease-in-out",
+              "&:hover": {
+                boxShadow: (theme) =>
+                  `0 8px 24px ${alpha(theme.palette.primary.main, 0.15)}`,
+              },
+            }}
           >
-            <h2 className="text-2xl font-semibold mb-6 text-gray-800">Sensor Readings</h2>
-            <div className="grid grid-cols-2 gap-6">
-                <div className="col-span-2">
-                <label className="block text-gray-700 font-medium mb-2">
-                  Temperature (°C)
-                </label>
-                <input
-                  type="number"
-                  name="temperature"
-                  value={parseFloat(formData.temperature).toFixed(2)}
-                  onChange={handleInputChange}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200 hover:border-blue-300"
-                  required
-                />
-                </div>
+            <Typography variant="h5" sx={{ mb: 4, fontWeight: 600 }}>
+              Sensor Readings
+            </Typography>
 
-                <div>
-                <label className="block text-gray-700 font-medium mb-2">
-                  Vibration 01 Sensor Reading
-                </label>
-                <input
-                  type="number"
-                  name="vibration"
-                  value={parseFloat(formData.vibration).toFixed(2)}
-                  onChange={handleInputChange}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200 hover:border-blue-300"
-                  required
-                />
-                </div>
-
-                <div>
-                <label className="block text-gray-700 font-medium mb-2">
-                  Vibration 02 Sensor Reading
-                </label>
-                <input
-                  type="number"
-                  name="vibration2"
-                  value={parseFloat(formData.vibration2).toFixed(2)}
-                  onChange={handleInputChange}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200 hover:border-blue-300"
-                  required
-                />
-                </div>
-
-              <div>
-                <label className="block text-gray-700 font-medium mb-2">
-                  Vibration 03 Sensor Reading
-                </label>
-                <input
-                  type="number"
-                  name="vibration3"
-                  value={formData.vibration3}
-                  onChange={handleInputChange}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200 hover:border-blue-300"
-                  required
-                />
-              </div>
-
-              <div className="col-span-2">
-                <label className="block text-gray-700 font-medium mb-3">
-                  Noise Detection
-                </label>
-                <div className="flex items-center space-x-6">
-                  <label className="flex items-center cursor-pointer hover:text-blue-600 transition-colors">
-                    <input
-                      type="radio"
-                      name="noise"
-                      value="yes"
-                      onChange={handleRadioChange}
-                      className="w-4 h-4 text-blue-600 mr-2"
-                    />
-                    Yes
-                  </label>
-                  <label className="flex items-center cursor-pointer hover:text-blue-600 transition-colors">
-                    <input
-                      type="radio"
-                      name="noise"
-                      value="no"
-                      onChange={handleRadioChange}
-                      className="w-4 h-4 text-blue-600 mr-2"
-                    />
-                    No
-                  </label>
-                </div>
-              </div>
-
-              <div className="col-span-2">
-                <label className="block text-gray-700 font-medium mb-3">
-                  Alignment Status
-                </label>
-                <div className="flex items-center space-x-6">
-                  <label className="flex items-center cursor-pointer hover:text-blue-600 transition-colors">
-                    <input
-                      type="radio"
-                      name="alignment"
-                      value="aligned"
-                      onChange={handleRadioChange}
-                      className="w-4 h-4 text-blue-600 mr-2"
-                    />
-                    Aligned
-                  </label>
-                  <label className="flex items-center cursor-pointer hover:text-blue-600 transition-colors">
-                    <input
-                      type="radio"
-                      name="alignment"
-                      value="misaligned"
-                      onChange={handleRadioChange}
-                      className="w-4 h-4 text-blue-600 mr-2"
-                    />
-                    Misaligned
-                  </label>
-                </div>
-              </div>
-
-              <div className="col-span-2">
-                <label className="block text-gray-700 font-medium mb-3">
-                  Overheating Status
-                </label>
-                <div className="flex items-center space-x-6">
-                  <label className="flex items-center cursor-pointer hover:text-blue-600 transition-colors">
-                    <input
-                      type="radio"
-                      name="overheating"
-                      value="yes"
-                      onChange={handleRadioChange}
-                      className="w-4 h-4 text-blue-600 mr-2"
-                    />
-                    Yes
-                  </label>
-                  <label className="flex items-center cursor-pointer hover:text-blue-600 transition-colors">
-                    <input
-                      type="radio"
-                      name="overheating"
-                      value="no"
-                      onChange={handleRadioChange}
-                      className="w-4 h-4 text-blue-600 mr-2"
-                    />
-                    No
-                  </label>
-                </div>
-              </div>
-            </div>
-
-            <button
-              type="submit"
-              className="w-full mt-8 bg-blue-600 text-white font-semibold py-4 rounded-xl hover:bg-blue-700 transform hover:scale-[1.02] transition-all duration-200 shadow-md hover:shadow-lg"
+            <Box
+              component="form"
+              onSubmit={handleSubmit}
+              sx={{ display: "grid", gap: 3 }}
             >
-              Run Diagnostic Analysis
-            </button>
-          </form>
+              {/* Temperature Input */}
+              <TextField
+                fullWidth
+                label="Temperature (°C)"
+                name="temperature"
+                type="number"
+                value={parseFloat(formData.temperature).toFixed(2)}
+                onChange={handleInputChange}
+                required
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    "&:hover fieldset": {
+                      borderColor: "primary.main",
+                    },
+                  },
+                }}
+              />
 
-          <div className="space-y-6">
+              {/* Vibration Inputs */}
+              <Box
+                sx={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(3, 1fr)",
+                  gap: 2,
+                }}
+              >
+                {(
+                  [
+                    { name: "vibration", label: "Vibration 01" },
+                    { name: "vibration2", label: "Vibration 02" },
+                    { name: "vibration3", label: "Vibration 03" },
+                  ] as const
+                ).map((field) => (
+                  <TextField
+                    key={field.name}
+                    label={`${field.label} Reading`}
+                    name={field.name}
+                    type="number"
+                    value={parseFloat(formData[field.name]).toFixed(2)}
+                    onChange={handleInputChange}
+                    required
+                    sx={{
+                      "& .MuiOutlinedInput-root": {
+                        "&:hover fieldset": {
+                          borderColor: "primary.main",
+                        },
+                      },
+                    }}
+                  />
+                ))}
+              </Box>
+
+              {/* Radio Options */}
+              {(
+                [
+                  {
+                    name: "noise",
+                    label: "Noise Detection",
+                    options: ["yes", "no"],
+                  },
+                  {
+                    name: "alignment",
+                    label: "Alignment Status",
+                    options: ["aligned", "misaligned"],
+                  },
+                  {
+                    name: "overheating",
+                    label: "Overheating Status",
+                    options: ["yes", "no"],
+                  },
+                ] as const
+              ).map((field) => (
+                <Box key={field.name} sx={{ mt: 2 }}>
+                  <Typography sx={{ mb: 1, fontWeight: 500 }}>
+                    {field.label}
+                  </Typography>
+                  <RadioGroup
+                    name={field.name}
+                    value={formData[field.name] || ""}
+                    onChange={handleRadioChange}
+                    row
+                    sx={{ gap: 4 }}
+                  >
+                    {field.options.map((option) => (
+                      <FormControlLabel
+                        key={option}
+                        value={option}
+                        control={<Radio />}
+                        label={option.charAt(0).toUpperCase() + option.slice(1)}
+                        sx={{
+                          "& .MuiRadio-root": {
+                            color: "primary.main",
+                          },
+                        }}
+                      />
+                    ))}
+                  </RadioGroup>
+                </Box>
+              ))}
+
+              <Button
+                type="submit"
+                variant="contained"
+                fullWidth
+                sx={{
+                  mt: 4,
+                  py: 1.5,
+                  fontWeight: 600,
+                  borderRadius: 2,
+                  boxShadow: "none",
+                  "&:hover": {
+                    boxShadow: "none",
+                    bgcolor: "primary.dark",
+                  },
+                }}
+              >
+                Run Diagnostic Analysis
+              </Button>
+            </Box>
+          </Paper>
+
+          {/* Results Section */}
+          <Paper
+            elevation={0}
+            sx={{
+              p: 4,
+              borderRadius: 2,
+              border: "1px solid",
+              borderColor: "divider",
+              transition: "all 0.2s ease-in-out",
+              "&:hover": {
+                boxShadow: (theme) =>
+                  `0 8px 24px ${alpha(theme.palette.primary.main, 0.15)}`,
+              },
+            }}
+          >
+            <Typography variant="h5" sx={{ mb: 4, fontWeight: 600 }}>
+              Diagnostic Results
+            </Typography>
+
             {error && (
-              <div className="bg-red-50 border-l-4 border-red-500 p-6 rounded-lg shadow-md">
-                <div className="flex items-center">
-                  <svg className="w-6 h-6 text-red-500 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  <p className="text-red-700 font-medium">{error}</p>
-                </div>
-              </div>
+              <Fade in>
+                <Alert
+                  severity={
+                    error === "No suggestions found!" ? "info" : "error"
+                  }
+                  sx={{ mb: 3 }}
+                >
+                  {error}
+                </Alert>
+              </Fade>
             )}
 
-            <div className="bg-white rounded-2xl shadow-lg p-8 space-y-6 hover:shadow-xl transition-shadow duration-300">
-              <h2 className="text-2xl font-semibold text-gray-800 border-b pb-4">Diagnostic Results</h2>
-              {result ? (
-              <div className="space-y-4">
-                <div className="bg-blue-50 p-4 rounded-lg">
-                <p className="font-medium text-blue-900">
-                  <span className="text-blue-700">Criticality Level:</span>{" "}
-                  {typeof result === "object" ? (
-                  <pre className="mt-2 p-3 bg-blue-100 rounded overflow-x-auto">
-                    {JSON.stringify(result, null, 2)}
-                  </pre>
-                  ) : (
-                  result
-                  )}
-                </p>
-                </div>
+            {result ? (
+              <Fade in>
+                <Box sx={{ display: "grid", gap: 3 }}>
+                  <Paper
+                    sx={{
+                      p: 3,
+                      bgcolor: alpha("#1976d2", 0.08),
+                      borderRadius: 2,
+                    }}
+                  >
+                    <Typography variant="subtitle1" fontWeight={600}>
+                      Criticality Level
+                    </Typography>
+                    <Typography variant="body1" sx={{ mt: 1 }}>
+                      {typeof result === "object"
+                        ? JSON.stringify(result, null, 2)
+                        : result}
+                    </Typography>
+                  </Paper>
 
-                {nextQuestion && (
-                <div className="bg-yellow-50 p-4 rounded-lg">
-                  <p className="font-medium text-yellow-900">
-                  <span className="text-yellow-700">Follow-up Analysis:</span>{" "}
-                  {typeof nextQuestion === "object" ? (
-                    <pre className="mt-2 p-3 bg-yellow-100 rounded overflow-x-auto">
-                    {JSON.stringify(nextQuestion, null, 2)}
-                    </pre>
-                  ) : (
-                    nextQuestion
+                  {nextQuestion && (
+                    <Paper
+                      sx={{
+                        p: 3,
+                        bgcolor: alpha("#ed6c02", 0.08),
+                        borderRadius: 2,
+                      }}
+                    >
+                      <Typography variant="subtitle1" fontWeight={600}>
+                        Follow-up Analysis
+                      </Typography>
+                      <Typography variant="body1" sx={{ mt: 1 }}>
+                        {typeof nextQuestion === "object"
+                          ? JSON.stringify(nextQuestion, null, 2)
+                          : nextQuestion}
+                      </Typography>
+                    </Paper>
                   )}
-                  </p>
-                </div>
-                )}
 
-                {recommendation && Array.isArray(recommendation) && (
-                <div className="bg-green-50 p-6 rounded-lg space-y-4">
-                  <h3 className="font-semibold text-xl text-green-800">Recommended Actions</h3>
-                  <ul className="space-y-4">
-                  {recommendation.map((item: RecommendationItem, index: number) => (
-                    <li key={index} className="bg-white p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200">
-                    <p className="font-medium text-gray-800 mb-2">
-                      <span className="text-green-700">Issue:</span> {item.reason}
-                    </p>
-                    <p className="text-gray-700">
-                      <span className="text-green-700">Solution:</span> {item.solution}
-                    </p>
-                    </li>
-                  ))}
-                  </ul>
-                </div>
-                )}
-              </div>
-              ) : (
-                <div className="bg-gray-50 p-4 rounded-lg">
-                <p className="font-medium text-gray-600">No diagnostic results available. Please run the analysis to see results.</p>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+                  {recommendation && Array.isArray(recommendation) && (
+                    <Box sx={{ mt: 2 }}>
+                      <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
+                        Recommended Actions
+                      </Typography>
+                      <Box sx={{ display: "grid", gap: 2 }}>
+                        {recommendation.map((item, index) => (
+                          <Paper
+                            key={index}
+                            sx={{
+                              p: 3,
+                              bgcolor: alpha("#2e7d32", 0.08),
+                              borderRadius: 2,
+                              transition: "transform 0.2s ease-in-out",
+                              "&:hover": {
+                                transform: "translateY(-2px)",
+                              },
+                            }}
+                          >
+                            <Typography
+                              variant="subtitle1"
+                              sx={{
+                                fontWeight: 600,
+                                color: "success.dark",
+                                mb: 1,
+                              }}
+                            >
+                              Issue:
+                            </Typography>
+                            <Typography paragraph>{item.reason}</Typography>
+                            <Divider sx={{ my: 1.5 }} />
+                            <Typography
+                              variant="subtitle1"
+                              sx={{
+                                fontWeight: 600,
+                                color: "success.dark",
+                                mb: 1,
+                              }}
+                            >
+                              Solution:
+                            </Typography>
+                            <Typography>{item.solution}</Typography>
+                          </Paper>
+                        ))}
+                      </Box>
+                    </Box>
+                  )}
+                </Box>
+              </Fade>
+            ) : (
+              <Box
+                sx={{
+                  p: 4,
+                  textAlign: "center",
+                  color: "text.secondary",
+                }}
+              >
+                <SettingsIcon sx={{ fontSize: 48, mb: 2, opacity: 0.5 }} />
+                <Typography>
+                  No diagnostic results available. Please run the analysis to
+                  see results.
+                </Typography>
+              </Box>
+            )}
+          </Paper>
+        </Box>
+      </Box>
+    </Container>
   );
 }
