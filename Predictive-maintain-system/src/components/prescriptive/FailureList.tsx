@@ -198,10 +198,31 @@ export default function FailureList() {
         </Tooltip>
       </Stack>
 
-      <TableContainer component={Paper} elevation={0} variant="outlined">
+      <TableContainer
+        component={Paper}
+        elevation={0}
+        variant="outlined"
+        sx={{
+          borderRadius: "0.5rem",
+          border: "1px solid",
+          borderColor: "grey.300",
+        }}
+      >
         <Table size="small">
           <TableHead>
-            <TableRow>
+            <TableRow
+              sx={{
+                bgcolor: "grey.100",
+                px: 4,
+                py: 2,
+                fontSize: "0.875rem",
+                fontWeight: 600,
+                color: "grey.700",
+                borderBottom: "1px solid",
+                borderColor: "grey.300",
+                whiteSpace: "nowrap",
+              }}
+            >
               {[
                 {
                   id: "timestamp",
@@ -250,7 +271,7 @@ export default function FailureList() {
                   sx={{
                     ...TABLE_HEADER_STYLES,
                     "&:hover": {
-                      backgroundColor: "rgba(25, 118, 210, 0.08)",
+                      bgcolor: "grey.50",
                     },
                     transition: "background-color 0.2s ease",
                     position: "relative",

@@ -1,4 +1,4 @@
-import { API_CONFIG } from "@/pages/config/api";
+import { API_CONFIG } from "@/config/api";
 
 export interface DataPoint {
   vibration_1: number;

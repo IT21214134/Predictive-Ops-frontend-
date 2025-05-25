@@ -15,9 +15,21 @@ import {
   Container,
   CircularProgress,
   Button,
+  Fade,
+  Breadcrumbs,
+  Link,
+  Divider,
+  alpha,
 } from "@mui/material";
+import { Timeline, Warning, ArrowBack, Assessment } from "@mui/icons-material";
 import Swal from "sweetalert2";
 import { fetchContributions } from "@/services/api";
+import PrescriptiveLayout from "../layout";
+import router from "next/router";
+import {
+  Build as DiagnoseIcon,
+  Analytics as AnalyticsIcon,
+} from "@mui/icons-material";
 
 interface Contributions {
   [feature: string]: number[];
@@ -45,21 +57,39 @@ export default function AnalyzeFailurePage() {
     return null;
   }, [data]);
 
-  if (!failureDataPassed) {
-    return (
-      <Container maxWidth="md" sx={{ textAlign: "center", mt: 4 }}>
-        <Alert severity="error">Error: Invalid or missing failure data.</Alert>
-        <Button
-          variant="contained"
-          color="primary"
-          sx={{ mt: 2 }}
-          onClick={() => router.push("/")}
+  // Error state component
+  const ErrorState = () => (
+    <PrescriptiveLayout>
+      <Container maxWidth="md" sx={{ textAlign: "center", py: 8 }}>
+        <Paper
+          elevation={0}
+          sx={{
+            p: 4,
+            border: "1px solid",
+            borderColor: "error.light",
+            bgcolor: alpha("#ff0000", 0.02),
+          }}
         >
-          Go Back
-        </Button>
+          <Warning color="error" sx={{ fontSize: 48, mb: 2 }} />
+          <Alert severity="error" sx={{ mb: 3 }}>
+            Error: Invalid or missing failure data.
+          </Alert>
+          <Button
+            variant="contained"
+            color="primary"
+            startIcon={<ArrowBack />}
+            onClick={() => router.push("/")}
+            sx={{
+              textTransform: "none",
+              boxShadow: "none",
+            }}
+          >
+            Return to Dashboard
+          </Button>
+        </Paper>
       </Container>
-    );
-  }
+    </PrescriptiveLayout>
+  );
 
   const [possibleCauses, setPossibleCauses] = useState<string[]>([]);
   const [solutions, setSolutions] = useState<string[]>([]);
@@ -115,66 +145,243 @@ export default function AnalyzeFailurePage() {
     }
   }, [failureDataPassed]);
 
+  if (!failureDataPassed) return <ErrorState />;
+
   return (
-    <Container maxWidth="lg" sx={{ mt: 4 }}>
-      <Typography variant="h4" fontWeight="bold" gutterBottom>
-        Failure Analysis
-      </Typography>
+    <PrescriptiveLayout>
+      <Container maxWidth="lg" sx={{ py: 4 }}>
+        {/* Breadcrumbs Navigation */}
+        <Breadcrumbs sx={{ mb: 3 }}>
+          <Link
+            href="/"
+            underline="hover"
+            sx={{ display: "flex", alignItems: "center" }}
+          >
+            Dashboard
+          </Link>
+          <Typography color="text.primary">Failure Analysis</Typography>
+        </Breadcrumbs>
 
-      {loading ? (
-        <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
-          <CircularProgress />
+        <Box sx={{ mb: 4 }}>
+          <Typography variant="h4" fontWeight="bold" gutterBottom>
+            Failure Analysis
+          </Typography>
+          <Typography color="text.secondary" variant="subtitle1">
+            Detailed analysis and recommendations for the detected failure
+          </Typography>
         </Box>
-      ) : (
-        <>
-          {contributionData && (
-            <Box sx={{ textAlign: "center", mb: 4 }}>
-              <ContributionsChart
-                contributions={contributionData?.contributions}
-              />
-            </Box>
-          )}
 
-          <Paper elevation={3} sx={{ p: 4, mb: 4 }}>
-            <Typography variant="h5" fontWeight="bold" gutterBottom>
-              Failure Type: {failureDataPassed.Failure_Type_Name}
+        <Fade in={!loading}>
+          <Box>
+            {contributionData && (
+              <Paper elevation={0} variant="outlined" sx={{ p: 3, mb: 4 }}>
+                <Box sx={{ mb: 2 }}>
+                  <Typography variant="h6" fontWeight="bold">
+                    Feature Contributions
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Impact of different factors on the failure prediction
+                  </Typography>
+                </Box>
+                <ContributionsChart
+                  contributions={contributionData?.contributions}
+                />
+              </Paper>
+            )}
+
+            <Paper elevation={0} variant="outlined" sx={{ p: 4, mb: 4 }}>
+              <Box sx={{ mb: 3 }}>
+                <Typography
+                  variant="h5"
+                  fontWeight="bold"
+                  gutterBottom
+                  sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                >
+                  <Assessment color="primary" />
+                  Failure Type: {failureDataPassed.Failure_Type_Name}
+                </Typography>
+                <Divider sx={{ my: 2 }} />
+              </Box>
+
+              <Typography variant="body1" paragraph>
+                Below is an analysis of the possible causes and solutions for
+                the failure type:{" "}
+                <strong>{failureDataPassed.Failure_Type_Name}</strong>.
+              </Typography>
+
+              <Box sx={{ mt: 4 }}>
+                <Typography
+                  variant="h6"
+                  fontWeight="bold"
+                  gutterBottom
+                  sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                >
+                  <Timeline color="primary" />
+                  Preventive Measures:
+                </Typography>
+                <Box sx={{ pl: 2 }}>
+                  {possibleCauses.map((cause, index) => (
+                    <Typography
+                      key={index}
+                      variant="body1"
+                      sx={{
+                        py: 1,
+                        display: "flex",
+                        alignItems: "center",
+                        "&:before": {
+                          content: '"•"',
+                          color: "primary.main",
+                          mr: 2,
+                          fontWeight: "bold",
+                        },
+                      }}
+                    >
+                      {cause}
+                    </Typography>
+                  ))}
+                </Box>
+              </Box>
+            </Paper>
+          </Box>
+        </Fade>
+
+        {loading && (
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              py: 8,
+              gap: 2,
+            }}
+          >
+            <CircularProgress />
+            <Typography color="text.secondary">
+              Analyzing failure data...
             </Typography>
-            <Typography
-              variant="body1"
-              color="textSecondary"
-              gutterBottom
-            ></Typography>
-            Below is an analysis of the possible causes and solutions for the
-            failure type: <strong>{failureDataPassed.Failure_Type_Name}</strong>
-            .
-            <Typography variant="h6" fontWeight="bold" gutterBottom>
-              Preventive Mesures:
-            </Typography>
-            <ul>
-              {possibleCauses.map((cause, index) => (
-                <li key={index}>
-                  <Typography variant="body1">{cause}</Typography>
-                </li>
-              ))}
-            </ul>
-          </Paper>
-        </>
-      )}
-      <Box sx={{ width: "100%" }}>
-        <Tabs
-          value={activeTab}
-          onChange={(e, newValue) => setActiveTab(newValue)}
-          sx={{ mb: 3 }}
-          indicatorColor="primary"
-          textColor="primary"
-          centered
+          </Box>
+        )}
+
+        <Paper
+          elevation={0}
+          variant="outlined"
+          sx={{
+            mt: 4,
+            borderRadius: 2,
+            overflow: "hidden",
+            border: "1px solid",
+            borderColor: "divider",
+          }}
         >
-          <Tab label="Diagnose Predicted Failure" />
-          <Tab label="General Failure Analysis" />
-        </Tabs>
+          <Tabs
+            value={activeTab}
+            onChange={(e, newValue) => setActiveTab(newValue)}
+            sx={{
+              borderBottom: 1,
+              borderColor: "divider",
+              bgcolor: alpha("#f5f5f5", 0.5),
+              "& .MuiTabs-indicator": {
+                height: 3,
+                borderRadius: "3px 3px 0 0",
+              },
+            }}
+            variant="fullWidth"
+          >
+            <Tab
+              icon={<DiagnoseIcon />}
+              iconPosition="start"
+              label="Diagnose Predicted Failure"
+              sx={{
+                textTransform: "none",
+                fontSize: "0.95rem",
+                fontWeight: 500,
+                py: 2,
+                "&.Mui-selected": {
+                  color: "primary.main",
+                  fontWeight: 600,
+                },
+                "&:hover": {
+                  bgcolor: alpha("#000", 0.02),
+                },
+              }}
+            />
+            <Tab
+              icon={<AnalyticsIcon />}
+              iconPosition="start"
+              label="General Failure Analysis"
+              sx={{
+                textTransform: "none",
+                fontSize: "0.95rem",
+                fontWeight: 500,
+                py: 2,
+                "&.Mui-selected": {
+                  color: "primary.main",
+                  fontWeight: 600,
+                },
+                "&:hover": {
+                  bgcolor: alpha("#000", 0.02),
+                },
+              }}
+            />
+          </Tabs>
 
-        <Box>{activeTab === 0 ? <Diagnose /> : <FailureDetails />}</Box>
-      </Box>
-    </Container>
+          <Fade in timeout={300}>
+            <Box
+              sx={{
+                p: 3,
+                bgcolor: "background.paper",
+                minHeight: 400,
+                position: "relative",
+              }}
+            >
+              {activeTab === 0 ? (
+                <Box role="tabpanel">
+                  <Diagnose />
+                </Box>
+              ) : (
+                <Box role="tabpanel">
+                  <FailureDetails />
+                </Box>
+              )}
+            </Box>
+          </Fade>
+        </Paper>
+      </Container>
+    </PrescriptiveLayout>
   );
 }
+
+// Error state should also use the layout
+const ErrorState = () => (
+  <PrescriptiveLayout>
+    <Container maxWidth="md" sx={{ textAlign: "center", py: 8 }}>
+      <Paper
+        elevation={0}
+        sx={{
+          p: 4,
+          border: "1px solid",
+          borderColor: "error.light",
+          bgcolor: alpha("#ff0000", 0.02),
+        }}
+      >
+        <Warning color="error" sx={{ fontSize: 48, mb: 2 }} />
+        <Alert severity="error" sx={{ mb: 3 }}>
+          Error: Invalid or missing failure data.
+        </Alert>
+        <Button
+          variant="contained"
+          color="primary"
+          startIcon={<ArrowBack />}
+          onClick={() => router.push("/prescriptive/dashboard")}
+          sx={{
+            textTransform: "none",
+            boxShadow: "none",
+          }}
+        >
+          Return to Dashboard
+        </Button>
+      </Paper>
+    </Container>
+  </PrescriptiveLayout>
+);

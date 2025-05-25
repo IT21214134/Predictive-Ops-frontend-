@@ -1,4 +1,4 @@
-import { API_CONFIG } from "@/pages/config/api";
+import { API_CONFIG } from "@/config/api";
 import axios from "axios";
 
 export const fetchPredictions = async (data: any) => {

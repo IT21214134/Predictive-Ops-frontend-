@@ -13,8 +13,22 @@ import {
   FormControlLabel,
   Box,
   SelectChangeEvent,
+  Paper,
+  Fade,
+  Grow,
+  IconButton,
+  Tooltip,
+  alpha,
+  CircularProgress,
+  Alert,
 } from "@mui/material";
-import { API_CONFIG } from "@/pages/config/api";
+import {
+  ExpandMore as ExpandMoreIcon,
+  CheckCircleOutline,
+  Error as ErrorIcon,
+  Refresh as RefreshIcon,
+} from "@mui/icons-material";
+import { API_CONFIG } from "@/config/api";
 
 interface Detail {
   reason: string;
@@ -34,9 +48,13 @@ const FailureDetails: React.FC = () => {
   const [showReasons, setShowReasons] = useState<boolean>(false);
   const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchFailureData = async () => {
+      setIsLoading(true);
+      setError(null);
       try {
         const response = await axios.get(
           `${API_CONFIG.baseUrl}${API_CONFIG.endpoints.instructions}`
@@ -44,7 +62,9 @@ const FailureDetails: React.FC = () => {
         setFailureData(response.data.instructions);
       } catch (error) {
         console.error("Error fetching failure data:", error);
-        alert("Failed to fetch failure data. Please try again later.");
+        setError("Failed to fetch failure data. Please try again.");
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -99,95 +119,183 @@ const FailureDetails: React.FC = () => {
     : currentDetails;
 
   return (
-    <div className="p-8 w-full bg-gray-50 min-h-screen">
-      <Card className="mb-8 p-6 shadow-lg bg-white">
+    <Box sx={{ p: 4 }}>
+      <Paper
+        elevation={0}
+        sx={{
+          p: 3,
+          mb: 4,
+          border: "1px solid",
+          borderColor: "divider",
+        }}
+      >
         <Typography
           variant="h4"
-          className="font-bold text-gray-800 mb-6 border-b pb-4"
+          sx={{
+            fontWeight: 700,
+            mb: 3,
+            color: "text.primary",
+            borderBottom: "2px solid",
+            borderColor: "primary.main",
+            pb: 2,
+            textAlign: "center",
+          }}
         >
           General Failure Diagnostics
         </Typography>
 
-        <FormControl fullWidth className="mb-6">
-          <InputLabel id="failure-select-label" className="font-medium">
-            Select a Failure Type
-          </InputLabel>
-          <Select
-            labelId="failure-select-label"
-            id="failure-select"
-            value={selectedFailure}
-            onChange={handleFailureChange}
+        {isLoading ? (
+          <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
+            <CircularProgress />
+          </Box>
+        ) : error ? (
+          <Alert
+            severity="error"
+            action={
+              <IconButton
+                color="inherit"
+                size="small"
+                onClick={() => window.location.reload()}
+              >
+                <RefreshIcon />
+              </IconButton>
+            }
           >
-            {failureData.map((failureItem) => (
-              <MenuItem key={failureItem._id} value={failureItem.failure}>
-                {failureItem.failure}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-      </Card>
+            {error}
+          </Alert>
+        ) : (
+          <Fade in>
+            <FormControl fullWidth>
+              <Typography variant="subtitle1" sx={{ mb: 1, fontWeight: 500 }}>
+                Select the Failure Type :
+              </Typography>
+              <Select
+                value={selectedFailure}
+                onChange={handleFailureChange}
+                sx={{
+                  "& .MuiSelect-select": {
+                    py: 1.5,
+                  },
+                }}
+              >
+                {failureData.map((failureItem) => (
+                  <MenuItem key={failureItem._id} value={failureItem.failure}>
+                    {failureItem.failure}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Fade>
+        )}
+      </Paper>
 
       {allTags.length > 0 && (
-        <Card className="mb-8 p-6 shadow-lg bg-white">
-          <Typography
-            variant="h6"
-            className="font-semibold text-gray-700 mb-4 border-b pb-3"
+        <Grow in>
+          <Paper
+            elevation={0}
+            sx={{
+              p: 3,
+              mb: 4,
+              border: "1px solid",
+              borderColor: "divider",
+            }}
           >
-            Observations
-          </Typography>
-          {allTags.map((tag) => (
-            <Box key={tag} className="mb-6 bg-gray-50 p-4 rounded-lg">
-              <Typography
-                variant="body1"
-                className="text-gray-800 mb-3 font-medium"
+            <Typography
+              variant="h6"
+              sx={{
+                fontWeight: 600,
+                mb: 3,
+                color: "text.primary",
+                borderBottom: "1px solid",
+                borderColor: "divider",
+                pb: 1,
+              }}
+            >
+              Observations
+            </Typography>
+            {allTags.map((tag) => (
+              <Box
+                key={tag}
+                sx={{
+                  mb: 2,
+                  p: 2,
+                  bgcolor: alpha("#f5f5f5", 0.5),
+                  borderRadius: 1,
+                  transition: "all 0.2s ease-in-out",
+                  "&:hover": {
+                    bgcolor: alpha("#f5f5f5", 0.8),
+                  },
+                }}
               >
-                Is there any {tag} experiencing with the machine?
-              </Typography>
-              <FormControl component="fieldset">
-                <Box className="flex items-center gap-6">
-                  <FormControlLabel
-                    control={
-                      <Checkbox
-                        checked={selectedTags.includes(tag)}
-                        onChange={() => handleTagChange(tag)}
-                        color="primary"
-                      />
-                    }
-                    label="Yes"
-                  />
-                  <FormControlLabel
-                    control={
-                      <Checkbox
-                        checked={!selectedTags.includes(tag)}
-                        onChange={() => handleTagChange(tag)}
-                        color="secondary"
-                      />
-                    }
-                    label="No"
-                  />
+                <Typography variant="body1" sx={{ mb: 1.5, fontWeight: 500 }}>
+                  Is there any {tag.toLowerCase()} experiencing with the
+                  machine?
+                </Typography>
+                <Box sx={{ display: "flex", gap: 2 }}>
+                  {["Yes", "No"].map((option) => (
+                    <FormControlLabel
+                      key={option}
+                      control={
+                        <Checkbox
+                          checked={
+                            option === "Yes"
+                              ? selectedTags.includes(tag)
+                              : !selectedTags.includes(tag)
+                          }
+                          onChange={() => handleTagChange(tag)}
+                          icon={<ErrorIcon color="action" />}
+                          checkedIcon={<CheckCircleOutline color="primary" />}
+                        />
+                      }
+                      label={option}
+                    />
+                  ))}
                 </Box>
-              </FormControl>
-            </Box>
-          ))}
-        </Card>
+              </Box>
+            ))}
+          </Paper>
+        </Grow>
       )}
 
       <Button
         variant="contained"
-        color="primary"
         onClick={handleShowReasons}
-        className="mb-8 py-3 px-6 text-lg font-medium"
+        sx={{
+          py: 1.5,
+          px: 4,
+          mb: 4,
+          fontWeight: 600,
+          boxShadow: "none",
+          "&:hover": {
+            boxShadow: "none",
+            bgcolor: "primary.dark",
+          },
+        }}
         fullWidth
       >
         Analyze Issues
       </Button>
 
       {showReasons && (
-        <>
-          <Card className="p-6 mb-6 shadow-lg bg-white">
+        <Fade in>
+          <Paper
+            elevation={0}
+            sx={{
+              p: 3,
+              border: "1px solid",
+              borderColor: "divider",
+            }}
+          >
             <Typography
               variant="h5"
-              className="font-semibold text-gray-700 mb-4 border-b pb-3"
+              sx={{
+                fontWeight: 600,
+                mb: 3,
+                color: "text.primary",
+                borderBottom: "1px solid",
+                borderColor: "divider",
+                pb: 1,
+              }}
             >
               Possible Reasons
             </Typography>
@@ -196,36 +304,69 @@ const FailureDetails: React.FC = () => {
               filteredDetails.map((detail, index) => (
                 <Card
                   key={index}
-                  className="mb-4 shadow-md cursor-pointer transition-all duration-300 hover:shadow-xl hover:scale-[1.02] border border-gray-100"
-                  onClick={() => toggleSolutionVisibility(index)}
+                  sx={{
+                    mb: 2,
+                    cursor: "pointer",
+                    transition: "all 0.2s ease-in-out",
+                    "&:hover": {
+                      transform: "translateY(-2px)",
+                      boxShadow: 2,
+                    },
+                  }}
                 >
-                  <CardContent className="hover:bg-gray-50">
-                    <Typography
-                      variant="body1"
-                      className="text-gray-800 font-medium"
+                  <CardContent>
+                    <Box
+                      onClick={() => toggleSolutionVisibility(index)}
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                      }}
                     >
-                      <strong>Reason:</strong> {detail.reason}
-                    </Typography>
-                    {expandedIndex === index && (
-                      <Box className="mt-4 p-4 bg-blue-50 rounded-lg">
-                        <Typography variant="body2" className="text-gray-700">
-                          <strong className="text-blue-700">Solution:</strong>{" "}
+                      <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                        {detail.reason}
+                      </Typography>
+                      <IconButton size="small">
+                        <ExpandMoreIcon
+                          sx={{
+                            transform:
+                              expandedIndex === index
+                                ? "rotate(180deg)"
+                                : "none",
+                            transition: "transform 0.2s",
+                          }}
+                        />
+                      </IconButton>
+                    </Box>
+
+                    <Fade in={expandedIndex === index}>
+                      <Box
+                        sx={{
+                          mt: 2,
+                          p: 2,
+                          bgcolor: alpha("#e3f2fd", 0.5),
+                          borderRadius: 1,
+                          display: expandedIndex === index ? "block" : "none",
+                        }}
+                      >
+                        <Typography variant="body2" color="text.secondary">
+                          <strong>Solution: </strong>
                           {detail.solution}
                         </Typography>
                       </Box>
-                    )}
+                    </Fade>
                   </CardContent>
                 </Card>
               ))
             ) : (
-              <Typography variant="body1" className="text-gray-500">
-                No details match the selected tags.
-              </Typography>
+              <Alert severity="info">
+                No details match the selected criteria.
+              </Alert>
             )}
-          </Card>
-        </>
+          </Paper>
+        </Fade>
       )}
-    </div>
+    </Box>
   );
 };
 

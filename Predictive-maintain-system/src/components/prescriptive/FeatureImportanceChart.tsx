@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { CircularProgress, Box, Typography } from "@mui/material";
 import { Pie } from "react-chartjs-2";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
-import { API_CONFIG } from "@/pages/config/api";
+import { API_CONFIG } from "@/config/api";
 
 // Register Chart.js components
 ChartJS.register(ArcElement, Tooltip, Legend);
