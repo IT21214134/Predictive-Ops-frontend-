@@ -133,11 +133,6 @@ export default function AnalyzeFailurePage() {
         })
         .catch((error) => {
           console.error("Error fetching contributions:", error);
-          Swal.fire({
-            icon: "error",
-            title: "Oops...",
-            text: "Failed to fetch contributions data. Please try again later.",
-          });
         })
         .finally(() => {
           setLoading(false);
