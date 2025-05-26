@@ -1,6 +1,5 @@
 "use client";
 import ContributionsChart from "@/components/prescriptive/ContributionsChart";
-import { FailureData } from "@/components/prescriptive/FailureList";
 import { useRouter, useSearchParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import Diagnose from "../diagnose/index";
@@ -37,6 +36,7 @@ interface Contributions {
 
 interface ContributionData {
   contributions: Contributions;
+  contributions_percent: any;
 }
 
 export default function AnalyzeFailurePage() {
@@ -171,24 +171,43 @@ export default function AnalyzeFailurePage() {
           </Typography>
         </Box>
 
-        <Fade in={!loading}>
-          <Box>
+        {/* <Fade in={!loading}> */}
+        {/* <Box>
             {contributionData && (
-              <Paper elevation={0} variant="outlined" sx={{ p: 3, mb: 4 }}>
-                <Box sx={{ mb: 2 }}>
-                  <Typography variant="h6" fontWeight="bold">
+              <Fade in timeout={600}>
+                <Paper
+                  elevation={2}
+                  sx={{
+                    p: { xs: 2, md: 4 },
+                    mb: 4,
+                    borderRadius: 3,
+                    boxShadow: "0 4px 24px rgba(0,0,0,0.07)",
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    maxWidth: 1000,
+                    mx: "auto",
+                  }}
+                >
+                  <Typography variant="h6" fontWeight="bold" gutterBottom>
                     Feature Contributions
                   </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Impact of different factors on the failure prediction
+                  <Typography variant="body2" color="text.secondary" mb={2}>
+                    Visual breakdown of how each sensor and measurement
+                    contributed to this failure prediction.
                   </Typography>
-                </Box>
-                <ContributionsChart
-                  contributions={contributionData?.contributions}
-                />
-              </Paper>
-            )}
-
+                  <Box sx={{ width: "100%", mb: 3 }}>
+                    <ContributionsChart
+                      contributions_percent={
+                        contributionData.contributions_percent
+                      }
+                    />
+                  </Box>
+                </Paper>
+              </Fade>
+            )}*/}
+        <Fade in={!loading}>
+          <Box>
             <Paper elevation={0} variant="outlined" sx={{ p: 4, mb: 4 }}>
               <Box sx={{ mb: 3 }}>
                 <Typography
