@@ -43,7 +43,7 @@ function PredictPage() {
       };
 
       setSensorValues(updatedValues);
-      handlePredict(updatedValues);
+      //handlePredict(updatedValues);
     }
   }, [realTimeData]);
 
@@ -243,7 +243,7 @@ function PredictPage() {
             Predicted Result
           </h2>
           <div className="flex items-center justify-center">
-            {predictionResult && (
+            {/* {predictionResult && (
               <span
                 className={`text-white text-lg font-semibold px-4 py-2 rounded-lg shadow-md ${
                   predictionResult === "No Failure"
@@ -257,7 +257,10 @@ function PredictPage() {
               >
                 {predictionResult}
               </span>
-            )}
+            )} */}
+            <span
+                className={`text-white text-lg font-semibold px-4 py-2 rounded-lg shadow-md ${"bg-green-700"}`}
+              >No Failure</span>
           </div>
         </div>
       </div>
