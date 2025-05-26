@@ -7,7 +7,7 @@ export const API_CONFIG = {
     diagnose: "/diagnostics/diagnose",
     featureImportance: "/model/feature-importance",
     analyze: "/analytics/analize",
-    failureAnalysis: "/failure-analysis/analyze",
+    failureAnalysis: "/analytics/analyze",
     correlations: "/correlations",
     correlationMatrix: "/correlation_matrix",
   },

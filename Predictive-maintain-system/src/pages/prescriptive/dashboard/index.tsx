@@ -34,6 +34,7 @@ import {
 import React from "react";
 import PrescriptiveLayout from "../layout";
 import FailureList from "@/components/prescriptive/FailureList";
+import FeatureImportanceChart from "@/components/prescriptive/FeatureImportanceChart";
 import { loadData, loadMetrics } from "../../../app/data/data";
 // Register the components
 ChartJS.register(
@@ -57,10 +58,10 @@ interface DataRow {
 }
 
 interface PerformanceMetrics {
-  accuracy: number;
-  precision: number;
-  recall: number;
-  f1_score: number;
+  accuracy: number | null;
+  precision: number | null;
+  recall: number | null;
+  f1_score: number | null;
 }
 
 const TechnicalDashboard = ({
@@ -348,11 +349,16 @@ const TechnicalDashboard = ({
                                 fontWeight: 600,
                               }}
                             >
-                              {(
-                                performance[key as keyof PerformanceMetrics] *
-                                100
-                              ).toFixed(1)}
-                              %
+                              {performance[key as keyof PerformanceMetrics] !==
+                                null &&
+                              performance[key as keyof PerformanceMetrics] !==
+                                undefined
+                                ? `${(
+                                    performance[
+                                      key as keyof PerformanceMetrics
+                                    ]! * 100
+                                  ).toFixed(1)}%`
+                                : "N/A"}
                             </Typography>
                           </CardContent>
                         </Card>
@@ -364,6 +370,21 @@ const TechnicalDashboard = ({
             </Card>
           </Grid>
         </Grid>
+
+        {/* Feature Importance Chart */}
+        <Box sx={{ mt: 4 }}>
+          <Card
+            sx={{
+              boxShadow: "0 2px 4px rgba(0,0,0,0.08)",
+              borderRadius: 2,
+              p: 2,
+            }}
+          >
+            <CardContent>
+              <FeatureImportanceChart />
+            </CardContent>
+          </Card>
+        </Box>
       </Box>
     </Container>
   );
@@ -426,19 +447,37 @@ const NonTechnicalDashboard = ({
           icon: "⚡",
           shadow: "0 2px 8px rgba(94, 53, 177, 0.15)",
         };
+      case "Not Available":
+        return {
+          bg: "#F5F5F5",
+          text: "#757575",
+          icon: "❔",
+          shadow: "none",
+        };
       default:
         return {
-          bg: "#E8F5E9",
-          text: "#2E7D32",
-          icon: "✓",
-          shadow: "0 2px 8px rgba(46, 125, 50, 0.15)",
+          bg: "#F5F5F5",
+          text: "#757575",
+          icon: "❔",
+          shadow: "none",
         };
     }
   };
 
+  // Add formatValue function here
+  const formatValue = (value: any, suffix: string = ""): string => {
+    if (value === null || value === undefined || value === "") {
+      return "N/A";
+    }
+    if (typeof value === "number") {
+      return `${value.toFixed(1)}${suffix}`;
+    }
+    return `${value}${suffix}`;
+  };
+
   const statusColor = getStatusColor(riskLevel);
 
-  const renderMetricValue = (value: number | string, height = 60) => {
+  const renderMetricValue = (value: number | string | null, height = 60) => {
     if (isLoading) {
       return (
         <Skeleton
@@ -448,6 +487,28 @@ const NonTechnicalDashboard = ({
         />
       );
     }
+
+    if (value === null || value === undefined || value === "") {
+      return (
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            flexDirection: "column",
+            gap: 1,
+          }}
+        >
+          <Typography variant="h4" color="text.secondary">
+            --
+          </Typography>
+          <Typography variant="caption" color="text.secondary">
+            Data not available
+          </Typography>
+        </Box>
+      );
+    }
+
     return value;
   };
 
@@ -557,9 +618,12 @@ const NonTechnicalDashboard = ({
                 </Typography>
                 <Typography
                   variant="h2"
-                  sx={{ color: statusColor.text, mb: 2 }}
+                  sx={{
+                    color: riskLevel ? statusColor.text : "text.secondary",
+                    mb: 2,
+                  }}
                 >
-                  {renderMetricValue(riskLevel)}
+                  {renderMetricValue(riskLevel || "N/A")}
                 </Typography>
                 <Typography variant="body2" color="textSecondary">
                   Current operational condition
@@ -577,7 +641,9 @@ const NonTechnicalDashboard = ({
                 </Typography>
                 <Typography variant="h2" sx={{ color: "#1976d2", mb: 2 }}>
                   {renderMetricValue(
-                    `${(performance.accuracy * 100 || 0).toFixed(1)}%`
+                    performance.accuracy
+                      ? formatValue(performance.accuracy * 100, "%")
+                      : "N/A"
                   )}
                 </Typography>
                 <Typography variant="body2" color="textSecondary">
@@ -596,7 +662,9 @@ const NonTechnicalDashboard = ({
                 </Typography>
                 <Typography variant="h2" sx={{ color: "#f57c00", mb: 2 }}>
                   {renderMetricValue(
-                    `${(100 - (performance.accuracy * 100 || 0)).toFixed(1)}%`
+                    performance.accuracy
+                      ? formatValue(100 - performance.accuracy * 100, "%")
+                      : "N/A"
                   )}
                 </Typography>
                 <Typography variant="body2" color="textSecondary">
@@ -680,7 +748,7 @@ export default function Dashboard() {
     f1_score: 0,
   });
   const [activeTab, setActiveTab] = useState(0);
-  const [riskLevel, setRiskLevel] = useState("Good");
+  const [riskLevel, setRiskLevel] = useState("N/A");
   const [isLoading, setIsLoading] = useState(true);
 
   // Update the useEffect to properly load data using the loadData and loadMetrics functions
@@ -688,66 +756,59 @@ export default function Dashboard() {
     async function fetchData() {
       try {
         setIsLoading(true);
-        // Try to load data and metrics concurrently
         const [newData, newMetrics] = await Promise.allSettled([
           loadData(),
           loadMetrics(),
         ]);
 
-        // Handle data loading result
+        let loadedData: DataRow[] = [];
+        let loadedMetrics: PerformanceMetrics = {
+          accuracy: null,
+          precision: null,
+          recall: null,
+          f1_score: null,
+        };
+
         if (newData.status === "fulfilled") {
-          setData(newData.value);
+          loadedData = newData.value;
+          setData(loadedData);
         } else {
-          console.error("Failed to load data:", newData.reason);
           setData([]);
         }
 
-        // Handle metrics loading result
         if (newMetrics.status === "fulfilled") {
-          setPerformance(newMetrics.value);
+          loadedMetrics = newMetrics.value;
+          setPerformance(loadedMetrics);
         } else {
-          console.error("Failed to load metrics:", newMetrics.reason);
           setPerformance({
-            accuracy: 0,
-            precision: 0,
-            recall: 0,
-            f1_score: 0,
+            accuracy: null,
+            precision: null,
+            recall: null,
+            f1_score: null,
           });
         }
 
-        // Calculate risk level from available data
-        if (newData.status === "fulfilled") {
-          const failureCounts: Record<number, number> = newData.value.reduce(
-            (acc: Record<number, number>, row) => {
-              acc[row.Failure_Flag] = (acc[row.Failure_Flag] || 0) + 1;
-              return acc;
-            },
-            {}
-          );
-
-          const highFailures = Object.keys(failureCounts).filter(
-            (flag) => Number(flag) > 3
-          ).length;
-
+        // Calculate riskLevel using the freshly loaded metrics
+        if (loadedMetrics.accuracy != null) {
           setRiskLevel(
-            highFailures > 2
-              ? "Critical"
-              : highFailures > 0
+            loadedMetrics.accuracy >= 0.9
+              ? "Good"
+              : loadedMetrics.accuracy >= 0.7
               ? "Moderate"
-              : "Good"
+              : "Critical"
           );
+        } else {
+          setRiskLevel("Not Available");
         }
       } catch (error) {
-        console.error("Error loading dashboard data:", error);
-        // Initialize with empty data in case of error
         setData([]);
         setPerformance({
-          accuracy: 0,
-          precision: 0,
-          recall: 0,
-          f1_score: 0,
+          accuracy: null,
+          precision: null,
+          recall: null,
+          f1_score: null,
         });
-        setRiskLevel("Good");
+        setRiskLevel("Not Available");
       } finally {
         setIsLoading(false);
       }
