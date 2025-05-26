@@ -257,7 +257,10 @@ function PredictPage() {
               >
                 {predictionResult}
               </span>
-            )} */}No Failure 
+            )} */}
+            <span
+                className={`text-white text-lg font-semibold px-4 py-2 rounded-lg shadow-md ${"bg-green-700"}`}
+              >No Failure</span>
           </div>
         </div>
       </div>
