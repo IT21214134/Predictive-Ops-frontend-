@@ -1,52 +1,3 @@
-// import React from "react";
-// import { FaExclamationTriangle, FaCheckCircle, FaTimesCircle } from "react-icons/fa";
-
-// type SensorStatusProps = {
-//     name: string;
-//     value: number;//| string;
-//     processedValue: number;
-//     nullFlag: number;
-//     anomalyFlag: string;
-// };
-
-// const SensorStatus = ({ name, value, processedValue, nullFlag, anomalyFlag }: SensorStatusProps) => {
-//     const isNull = nullFlag === 1;
-//     const isAnomalous = anomalyFlag !== "Normal";
-
-//     return (
-//         <div className="p-4 border rounded-lg shadow-md hover:shadow-lg transition-transform hover:-translate-y-1 bg-white">
-//             <h3 className="text-lg font-semibold mb-2 text-gray-800">{name}</h3>
-//             <div className="text-xl font-bold text-gray-700">{isNull ? `Processed to an average value: ${value.toFixed(2)}` : isAnomalous ? `Processed to an acceptable range value: ${processedValue.toFixed(2)}` : `Raw value: ${value.toFixed(2)}`}</div>
-
-//             {/* Null Flag */}
-//             {isNull && (
-//                 <div className="mt-2 flex items-center gap-2 text-red-500">
-//                     <FaTimesCircle />
-//                     <span>Null Detected</span>
-//                 </div>
-//             )}
-
-//             {/* Anomaly Flag */}
-//             {isAnomalous && (
-//                 <div className="mt-2 flex items-center gap-2 text-yellow-500 animate-pulse">
-//                     <FaExclamationTriangle />
-//                     <span>Anomaly{/*: {anomalyFlag}*/}</span>
-//                 </div>
-//             )}
-
-//             {/* Normal Indicator */}
-//             {!isNull && !isAnomalous && (
-//                 <div className="mt-2 flex items-center gap-2 text-green-500">
-//                     <FaCheckCircle />
-//                     <span>Normal</span>
-//                 </div>
-//             )}
-//         </div>
-//     );
-// };
-
-// export default SensorStatus;
-
 import React from "react";
 import { FaExclamationTriangle, FaCheckCircle, FaTimesCircle, FaInfoCircle } from "react-icons/fa";
 
@@ -86,7 +37,7 @@ const SensorStatus = ({ name, value, processedValue, nullFlag, anomalyFlag }: Se
                     ? `Processed to an acceptable range value: ${processedValue?.toFixed(2)}`
                     : `Original value: ${value.toFixed(2)}`}
             </div>
-            <div className="text-center items-center">{name?.startsWith("Vibration") ? "(magnitude)" : name?.startsWith("Temperature") ? "(°C)" : " "}</div>
+            <div /*className="text-center items-center"*/>{name?.startsWith("Vibration") ? "(vibration magnitude - m/s²)" : name?.startsWith("Temperature") ? "(°C)" : "-"}</div>
 
             {/* Status Indicators */}
             <div className="mt-4">
