@@ -1,5 +1,5 @@
 export const API_CONFIG = {
-  baseUrl: process.env.NEXT_PUBLIC_API_BASE_URL,
+  baseUrl: "http://51.21.194.188:5000",
   endpoints: {
     metrics: "/metrics/model_metrics",
     data: "/api/data",
