@@ -292,11 +292,14 @@
 
 // export default AnomalyViewer;
 
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { collection, query, where, getDocs } from "firebase/firestore";
 import { firestore as db } from "../../../../firebaseconfig";
 import { format } from "date-fns";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+//import html2canvas from "html2canvas";
 import NAVBAR from "@/components/navBar";
 
 const AnomalyViewer: React.FC = () => {
@@ -304,6 +307,7 @@ const AnomalyViewer: React.FC = () => {
   const [endDate, setEndDate] = useState<string>("");
   const [anomalies, setAnomalies] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const chartRef = useRef<HTMLDivElement>(null); // container for screenshot
 
   const fetchAnomalies = async () => {
     if (!startDate || !endDate) {
@@ -330,6 +334,230 @@ const AnomalyViewer: React.FC = () => {
       setLoading(false);
     }
   };
+
+  /* ------------------------------- pdf logic ------------------------------- */
+  const generatePdfReport = async () => {
+    if (!anomalies.length) return alert("No data - fetch anomalies first.");
+
+    try {
+      const { default: Chart } = await import("chart.js/auto");
+      const labels = anomalies.map((a) => format(new Date(a.timestamp), "dd/MM HH:mm"));
+      const anomalyCounts = anomalies.map((a) => a.anomalies?.length ?? 0);
+      const nullCounts = anomalies.map((a) => a.nulls?.length ?? 0);
+
+
+      // Sensor-level analysis
+      const sensorAnomalyCount: Record<string, number> = {};
+      const sensorNullCount: Record<string, number> = {};
+
+      anomalies.forEach((entry) => {
+        (entry.anomalies ?? []).forEach((sensor: string) => {
+          sensorAnomalyCount[sensor] = (sensorAnomalyCount[sensor] || 0) + 1;
+        });
+        (entry.nulls ?? []).forEach((sensor: string) => {
+          sensorNullCount[sensor] = (sensorNullCount[sensor] || 0) + 1;
+        });
+      });
+
+      const sortedAnomalousSensors = Object.entries(sensorAnomalyCount)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 5); // Top 5
+
+      const sortedNullSensors = Object.entries(sensorNullCount)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 5);
+
+
+      /* -------------------- build off‑screen Chart.js canvas --------------- */
+      const canvas = document.createElement("canvas");
+      canvas.width = 1600;
+      canvas.height = 800;
+      const ctx = canvas.getContext("2d");
+      
+      if (!ctx) {
+        throw new Error("Could not get canvas context");
+      }
+
+      const chart = new Chart(ctx, {
+        type: "bar",
+        data: {
+          labels,
+          datasets: [
+            { label: "Anomalies", data: anomalyCounts, backgroundColor: "#4f46e5" },
+            { label: "Null Flags", data: nullCounts, backgroundColor: "#16a34a" },
+          ],
+        },
+        options: {
+          responsive: false,
+          animation: false, // Disable animations for better PDF generation
+          plugins: { 
+            legend: { 
+              position: "top", 
+              labels: { font: { size: 28 } } 
+            } 
+          },
+          scales: {
+            x: { 
+              ticks: { font: { size: 24 }, maxRotation: 45, minRotation: 45 }, 
+              grid: { display: false } 
+            },
+            y: { 
+              ticks: { font: { size: 24 } } 
+            },
+          },
+        },
+      });
+
+      // Wait for chart to render completely
+      await new Promise(resolve => {
+        Chart.defaults.animation = false; // Ensure no animations
+        setTimeout(() => {
+          resolve(null);
+        }, 500); // Give it time to render
+      });
+
+      // Get the chart image with higher quality
+      const chartImg = canvas.toDataURL("image/png", 1.0);
+      
+      // Verify the image was created
+      if (!chartImg || chartImg === "data:,") {
+        throw new Error("Failed to generate chart image");
+      }
+
+      chart.destroy();
+
+      /* ------------------------- analytics & summary ----------------------- */
+      const totalAnomalies = anomalyCounts.reduce((a, b) => a + b, 0);
+      const totalNulls = nullCounts.reduce((a, b) => a + b, 0);
+      const maxAnom = Math.max(...anomalyCounts);
+      const idxMax = anomalyCounts.indexOf(maxAnom);
+      const worstTs = maxAnom !== 0 && labels[idxMax] ? labels[idxMax] : "-";
+      const anomalyPct = ((totalAnomalies / (totalAnomalies + totalNulls)) * 100 || 0).toFixed(1);
+      const nullPct = ((totalNulls / (totalAnomalies + totalNulls)) * 100 || 0).toFixed(1);
+
+      /* -------------------------- assemble PDF ---------------------------- */
+      const doc = new jsPDF({ orientation: "portrait", unit: "pt", format: "a4" });
+      const pw = doc.internal.pageSize.getWidth();
+
+      // Header
+      doc.setFontSize(22);
+      doc.setFont("helvetica", "bold");
+      doc.text("Anomaly Report", pw / 2, 40, { align: "center" });
+      doc.setFont("helvetica", "normal"); // Reset to normal font
+      doc.setFontSize(12);
+      doc.text(`Period: ${format(new Date(startDate), "yyyy-MM-dd")} - ${format(new Date(endDate), "yyyy-MM-dd")}`, 40, 70);
+      doc.text(`Generated: ${format(new Date(), "yyyy-MM-dd HH:mm")}`, 40, 90);
+
+      // Summary block
+      doc.setFontSize(14);
+      doc.text("Key Metrics", pw / 2, 120, { align: "center" });
+      doc.setFontSize(11);
+      const summaryLines = [
+        [`Total records`, anomalies.length.toString()],
+        [`Total null flags`, totalNulls.toString()],
+        [`Total anomalies`, totalAnomalies.toString()],
+        [`Null flags %`, `${nullPct}%`],
+        [`Anomaly %`, `${anomalyPct}%`],
+        [`Worst timestamp`, worstTs],
+      ];
+
+      const tableWidth = 300;
+      const tableStartX = (pw - tableWidth) / 2; // Center the table
+      
+      autoTable(doc, {
+        startY: 130,
+        head: [["Metric", "Value"]],
+        body: summaryLines,
+        theme: "grid",
+        styles: { fontSize: 10 },
+        margin: { left: tableStartX, right: tableStartX },
+        tableWidth: tableWidth,
+      });
+
+      // // Chart image - with better positioning and error handling
+      // const chartTop = (doc as any).lastAutoTable ? ((doc as any).lastAutoTable.finalY || 0) + 20 : 200;
+      // const chartW = pw - 340; // leave space for summary block
+      // const chartH = (canvas.height * chartW) / canvas.width;
+
+
+      /* —— Page 2: chart + detail table —— */
+      //doc.addPage();
+
+      // Chart image - centered
+      const chartTop = (doc as any).lastAutoTable ? ((doc as any).lastAutoTable.finalY || 0) + 30 : 220;
+      const maxChartW = pw - 80; // Leave 40pt margin on each side
+      const chartW = Math.min(maxChartW, 600); // Max width of 600pt
+      const chartH = (canvas.height * chartW) / canvas.width;
+      const chartStartX = (pw - chartW) / 2; // Center the chart
+    
+      
+      try {
+        // Add the chart image to PDF
+        //doc.addImage(chartImg, "PNG", 320, chartTop, chartW, chartH, undefined, "FAST");
+        doc.addImage(chartImg, "PNG", chartStartX, chartTop, chartW, chartH, undefined, "FAST");
+        console.log("Chart image added successfully to PDF");
+      } catch (imageError) {
+        console.error("Error adding image to PDF:", imageError);
+        // Add a placeholder text if image fails
+        doc.setFontSize(12);
+        doc.text("Chart could not be generated", 320, chartTop + 50);
+      }
+
+
+      if(sortedAnomalousSensors.length > 0) {
+        // Anomalous Sensors Table
+        autoTable(doc, {
+          startY: chartTop + chartH + 30,
+          //startY: (doc as any).lastAutoTable.finalY + 20,
+          head: [["Top Anomalous Sensors", "Count"]],
+          body: sortedAnomalousSensors.map(([sensor, count]) => [sensor, count.toString()]),
+          theme: "striped",
+          styles: { fontSize: 10 },
+          margin: { left: 40, right: 40 },
+        });
+      }
+      
+      if (sortedNullSensors.length > 0) {
+        // Null-prone Sensors Table
+        autoTable(doc, {
+          startY: sortedAnomalousSensors.length > 0 ? (doc as any).lastAutoTable.finalY + 10 : chartTop + chartH + 30,
+          //startY: (doc as any).lastAutoTable.finalY + 10,
+          head: [["Top Null-Flagged Sensors", "Count"]],
+          body: sortedNullSensors.map(([sensor, count]) => [sensor, count.toString()]),
+          theme: "striped",
+          styles: { fontSize: 10 },
+          margin: { left: 40, right: 40 },
+        });
+      }
+
+
+
+
+      // Detailed table
+      const tableBody = anomalies.map((a) => [
+        format(new Date(a.timestamp), "yyyy-MM-dd HH:mm:ss"),
+        (a.anomalies?.length ?? 0).toString(),
+        (a.nulls?.length ?? 0).toString(),
+      ]);
+      
+      autoTable(doc, {
+        startY: (doc as any).lastAutoTable.finalY + 10,
+        //startY: chartTop + chartH + 30,
+        head: [["Timestamp", "# Anomalies", "# Null Flags"]],
+        body: tableBody,
+        styles: { fontSize: 9 },
+        headStyles: { fillColor: [79, 70, 229] },
+        margin: { left: 40, right: 40 },
+      });
+
+      doc.save(`anomaly-report_${startDate}_to_${endDate}.pdf`);
+      
+    } catch (err) {
+      console.error("PDF generation error:", err);
+      alert(`PDF generation failed: ${err instanceof Error ? err.message : 'Unknown error'}`);
+    }
+  };
+  
 
   const processChartData = () => {
     return anomalies.map((anomaly) => ({
@@ -371,6 +599,16 @@ const AnomalyViewer: React.FC = () => {
         >
           Fetch Anomalies
         </button>
+
+        {/* download pdf */}
+        {anomalies.length > 0 && (
+          <button
+            className="self-end px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"
+            onClick={generatePdfReport}
+          >
+            Download PDF
+          </button>
+        )}
       </div>
 
       {loading && <p className="mt-4 text-gray-600">Loading...</p>}
