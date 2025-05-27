@@ -5,29 +5,30 @@ phases:
     runtime-versions:
       nodejs: 20
     commands:
-      -  echo Changing directory to Predictive-maintain-system...
-      -  cd Predictive-maintain-system
-      -  echo Installing dependencies...
-      -  npm install
+      - echo Changing directory to Predictive-maintain-system...
+      - cd Predictive-maintain-system
+      - echo Installing dependencies...
+      - npm install
   build:
     commands:
       #-  echo Changing directory to Predictive-maintain-system...
-      -  ls
-      -  echo Fetching environment variables...
+      - ls
+      - echo Fetching environment variables...
       # Write .env directly inside the subdirectory
-      -  echo "apiKey=$apiKey" > .env
-      -  echo "authDomain=$authDomain" >> .env
-      -  echo "projectId=$projectId" >> .env
-      -  echo "storageBucket=$storageBucket" >> .env
-      -  echo "messagingSenderId=$messagingSenderId" >> .env
-      -  echo "appId=$appId" >> .env
+      - echo "apiKey=$apiKey" > .env
+      - echo "authDomain=$authDomain" >> .env
+      - echo "projectId=$projectId" >> .env
+      - echo "storageBucket=$storageBucket" >> .env
+      - echo "messagingSenderId=$messagingSenderId" >> .env
+      - echo "appId=$appId" >> .env
+      - echo "NEXT_PUBLIC_API_BASE_URL=$NEXT_PUBLIC_API_BASE_URL" >> .env
 
-      -  echo Build started...
-      -  npm run build
-      -  echo Build completed ==> Exporting artifacts...
-      -  ls
+      - echo Build started...
+      - npm run build
+      - echo Build completed ==> Exporting artifacts...
+      - ls
 artifacts:
   files:
-    -  '**/*'
+    - "**/*"
   discard-paths: no
   base-directory: Predictive-maintain-system/out
